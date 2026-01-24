@@ -1,8 +1,24 @@
 #pragma once
 
+#include <chrono>
 #include <concepts>
 #include <type_traits>
 #include <utility>
+
+namespace agner {
+
+/// @brief Concept for types that can be sent as actor messages.
+template <typename T>
+concept MessageType = std::movable<std::decay_t<T>>;
+
+/// @brief Concept for duration types compatible with std::chrono.
+template <typename T>
+concept DurationLike = requires {
+  typename T::rep;
+  typename T::period;
+};
+
+}  // namespace agner
 
 namespace agner::detail {
 
