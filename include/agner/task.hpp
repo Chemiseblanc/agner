@@ -6,33 +6,21 @@
 #include <type_traits>
 #include <utility>
 
-#include "scheduler_concept.hpp"
+#include "agner/scheduler_concept.hpp"
+#include "agner/detail/task_detail.hpp"
 
 namespace agner {
 
 class Scheduler;
 
-namespace detail {
-
-template <typename Promise>
-struct final_awaitable {
-  bool await_ready() const noexcept { return false; }
-
-  void await_suspend(std::coroutine_handle<Promise> handle) const noexcept {
-    auto& promise = handle.promise();
-    if (promise.continuation) {
-      promise.continuation.resume();
-    } else if (promise.detached) {
-      handle.destroy();
-    }
-    await_resume();
-  }
-
-  void await_resume() const noexcept {}
-};
-
-}  // namespace detail
-
+/**
+ * @brief Lazy coroutine task that produces a value of type T.
+ *
+ * Tasks are awaitable and can be chained with co_await. Use detach()
+ * to schedule a task for independent execution without awaiting.
+ *
+ * @tparam T The result type, or void.
+ */
 template <typename T>
 class task {
  public:
@@ -58,6 +46,7 @@ class task {
     }
   }
 
+  /// @brief Detach the task for independent execution on a scheduler.
   template <SchedulerLike SchedulerType>
   void detach(SchedulerType& scheduler);
 
@@ -100,6 +89,7 @@ struct task<T>::promise_type {
   void return_value(T value) { result = std::move(value); }
 };
 
+/// @brief Specialization of task for void return type.
 template <>
 class task<void> {
  public:
@@ -111,6 +101,7 @@ class task<void> {
   task& operator=(task&& other) noexcept;
   ~task();
 
+  /// @brief Detach the task for independent execution on a scheduler.
   template <SchedulerLike SchedulerType>
   void detach(SchedulerType& scheduler);
 

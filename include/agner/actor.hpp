@@ -1,5 +1,13 @@
 #pragma once
 
+/**
+ * @file actor.hpp
+ * @brief Actor base class for message-driven concurrent computation.
+ *
+ * Actors are lightweight processes that communicate via asynchronous messages.
+ * Each actor has a mailbox and processes messages using coroutine-based receive.
+ */
+
 #include <cassert>
 #include <chrono>
 #include <deque>
@@ -10,14 +18,16 @@
 #include <utility>
 #include <variant>
 
-#include "actor_concepts.hpp"
-#include "actor_control.hpp"
-#include "actor_detail.hpp"
-#include "scheduler.hpp"
-#include "scheduler_concept.hpp"
+#include "agner/actor_concepts.hpp"
+#include "agner/actor_control.hpp"
+#include "agner/detail/actor_detail.hpp"
+#include "agner/scheduler.hpp"
+#include "agner/scheduler_concept.hpp"
 
 namespace agner {
 
+/// @brief Helper for creating overloaded visitor lambdas.
+/// @tparam Functors Callable types to combine.
 template <typename... Functors>
 struct overload : Functors... {
   using Functors::operator()...;
@@ -26,57 +36,85 @@ struct overload : Functors... {
 template <typename... Functors>
 overload(Functors...) -> overload<Functors...>;
 
+/// @brief Wrapper to declare the message types an actor can receive.
+/// @tparam MessageTypes The message types this actor handles.
 template <typename... MessageTypes>
 struct Messages {};
-
-namespace detail {}  // namespace detail
 
 template <SchedulerLike SchedulerType, typename Derived, typename MessagePack>
 class Actor;
 
+/**
+ * @brief Base class for actors using CRTP.
+ *
+ * Derive from this class and implement a `run()` coroutine to define behavior.
+ * Use `receive()` to await messages and `send()` to dispatch them.
+ *
+ * @tparam SchedulerType Scheduler implementation (must satisfy SchedulerLike).
+ * @tparam Derived The derived actor class (CRTP).
+ * @tparam MessageTypes Message types wrapped in Messages<...>.
+ */
 template <SchedulerLike SchedulerType, typename Derived,
           typename... MessageTypes>
 class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     : public ActorControl {
  public:
+  /// Variant type holding any receivable message including signals.
   using message_variant = std::variant<MessageTypes..., ExitSignal, DownSignal>;
 
+  /// @brief Construct an actor bound to a scheduler.
   explicit Actor(SchedulerType& scheduler) : scheduler_(scheduler) {}
 
+  /// @brief Get the scheduler this actor is bound to.
   SchedulerType& scheduler() noexcept { return scheduler_; }
 
+  /// @brief Get this actor's reference.
   ActorRef self() const noexcept { return this->actor_ref(); }
 
-  template <typename Message>
-  void send(Message&& message) {
-    enqueue_message(std::forward<Message>(message));
+  /// @brief Send a message to this actor's own mailbox.
+  void send(MessageType auto&& message) {
+    enqueue_message(std::forward<decltype(message)>(message));
   }
 
-  template <typename Message>
-  void send(ActorRef target, Message&& message) {
-    scheduler_.send(target, std::forward<Message>(message));
+  /// @brief Send a message to another actor.
+  /// @param target The recipient actor reference.
+  /// @param message The message to send.
+  void send(ActorRef target, MessageType auto&& message) {
+    scheduler_.send(target, std::forward<decltype(message)>(message));
   }
 
+  /// @brief Spawn a new actor.
+  /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
   ActorRef spawn(Args&&... args) {
     return scheduler_.template spawn<ActorType>(std::forward<Args>(args)...);
   }
 
+  /// @brief Spawn a new actor and establish a bidirectional link.
+  /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
   ActorRef spawn_link(Args&&... args) {
     return scheduler_.template spawn_link<ActorType>(
         self(), std::forward<Args>(args)...);
   }
 
+  /// @brief Spawn a new actor and monitor it for exit.
+  /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
   ActorRef spawn_monitor(Args&&... args) {
     return scheduler_.template spawn_monitor<ActorType>(
         self(), std::forward<Args>(args)...);
   }
 
+  /// @brief Establish a bidirectional link with another actor.
   void link(ActorRef other) { scheduler_.link(self(), other); }
+
+  /// @brief Monitor another actor for exit (receive DownSignal on exit).
   void monitor(ActorRef other) { scheduler_.monitor(self(), other); }
 
+  /// @brief Await and process a message from the mailbox.
+  /// @param visitors Callable handlers for each message type.
+  /// @return The result from the matching visitor.
   template <typename... Visitors>
   task<detail::receive_result_t<message_variant, Visitors...>> receive(
       Visitors&&... visitors) {
@@ -85,14 +123,18 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
         *this, std::forward<Visitors>(visitors)...);
   }
 
-  template <typename Rep, typename Period, typename TimeoutVisitor,
-            typename... Visitors>
+  /// @brief Await a message with a timeout.
+  /// @param timeout Maximum duration to wait.
+  /// @param timeout_visitor Called if no message arrives in time.
+  /// @param visitors Callable handlers for each message type.
+  /// @return The result from the matching visitor or timeout handler.
+  template <typename TimeoutVisitor, typename... Visitors>
     requires detail::HasVisitors<Visitors...> &&
              detail::TimeoutVisitorFor<
                  TimeoutVisitor,
                  detail::receive_result_t<message_variant, Visitors...>>
   task<detail::receive_result_t<message_variant, Visitors...>> try_receive(
-      std::chrono::duration<Rep, Period> timeout,
+      DurationLike auto timeout,
       TimeoutVisitor&& timeout_visitor, Visitors&&... visitors) {
     using result_t = detail::receive_result_t<message_variant, Visitors...>;
     auto cast_timeout =
@@ -105,16 +147,21 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     co_return co_await awaiter;
   }
 
+  /// @brief Start the actor by invoking its run() coroutine.
+  /// @return The exit reason when the actor completes.
   task<ExitReason> start() {
     co_await static_cast<Derived&>(*this).run();
     co_return exit_reason();
   }
 
+  /// @brief Request the actor to stop.
+  /// @param reason The exit reason to set.
   void stop(ExitReason reason = {}) override {
     exit_reason_ = reason;
     enqueue_message(ExitSignal{self(), reason});
   }
 
+  /// @brief Get the actor's exit reason.
   ExitReason exit_reason() const noexcept override {
     return exit_reason_.value_or(ExitReason{ExitReason::Kind::normal});
   }
