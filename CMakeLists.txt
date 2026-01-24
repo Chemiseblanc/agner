@@ -58,7 +58,7 @@ target_compile_options(agner_benchmarks PRIVATE -pedantic -Werror -Wall)
 
 target_include_directories(agner_tests
   PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/test
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/include
 )
 
 target_link_libraries(agner_tests

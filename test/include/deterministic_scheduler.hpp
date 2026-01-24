@@ -1,26 +1,20 @@
 #pragma once
 
 #include <algorithm>
-#include <any>
 #include <cassert>
 #include <chrono>
 #include <coroutine>
 #include <deque>
 #include <functional>
 #include <map>
-#include <memory>
 #include <random>
-#include <utility>
 #include <vector>
 
-#include "agner/actor_control.hpp"
-#include "agner/actor_detail.hpp"
-#include "agner/scheduler_concept.hpp"
-#include "agner/task.hpp"
+#include "agner/scheduler_base.hpp"
 
 namespace agner {
 
-class DeterministicScheduler {
+class DeterministicScheduler : public SchedulerBase<DeterministicScheduler> {
  public:
   struct Clock {
     using rep = int64_t;
@@ -100,36 +94,8 @@ class DeterministicScheduler {
 
   time_point now() const noexcept { return current_time_; }
 
-  template <typename ActorType, typename... Args>
-  ActorRef spawn(Args&&... args) {
-    return spawn_impl<ActorType>(ActorRef{}, ActorRef{},
-                                 std::forward<Args>(args)...);
-  }
-
-  template <typename ActorType, typename... Args>
-  ActorRef spawn_link(ActorRef linker, Args&&... args) {
-    return spawn_impl<ActorType>(linker, ActorRef{},
-                                 std::forward<Args>(args)...);
-  }
-
-  template <typename ActorType, typename... Args>
-  ActorRef spawn_monitor(ActorRef monitor, Args&&... args) {
-    return spawn_impl<ActorType>(ActorRef{}, monitor,
-                                 std::forward<Args>(args)...);
-  }
-
-  template <typename Message>
-  void send(ActorRef target, Message&& message) {
-    auto entry = actors_.find(target);
-    if (entry == actors_.end()) {
-      return;
-    }
-    entry->second.send(std::any(std::forward<Message>(message)));
-  }
-
   void stop(ActorRef target, ExitReason reason = {}) {
-    auto entry = actors_.find(target);
-    assert(entry != actors_.end());
+    this->actors_.at(target);  // Validate actor exists
     if (stop_delivery_deferred_) {
       pending_stops_.push_back(StopRequest{target, reason});
       return;
@@ -177,111 +143,26 @@ class DeterministicScheduler {
   }
 
   void link(ActorRef left, ActorRef right) {
-    if (!left.valid() || !right.valid()) {
-      return;
-    }
-    assert(actor_exists(left));
-    assert(actor_exists(right));
-    links_[left].push_back(right);
-    links_[right].push_back(left);
+    this->actors_.at(left);
+    this->actors_.at(right);
+    this->links_[left].push_back(right);
+    this->links_[right].push_back(left);
   }
 
   void monitor(ActorRef monitor_ref, ActorRef target_ref) {
-    if (!monitor_ref.valid() || !target_ref.valid()) {
-      return;
-    }
-    assert(actor_exists(monitor_ref));
-    assert(actor_exists(target_ref));
-    monitors_[target_ref].push_back(monitor_ref);
+    this->actors_.at(monitor_ref);
+    this->actors_.at(target_ref);
+    this->monitors_[target_ref].push_back(monitor_ref);
   }
 
  private:
-  struct ActorEntry {
-    std::shared_ptr<ActorControl> control;
-    std::function<void(std::any&&)> send;
-  };
-
   struct StopRequest {
     ActorRef target;
     ExitReason reason;
   };
 
-  template <typename ActorType>
-  task<void> run_actor(std::shared_ptr<ActorType> actor, ActorRef actor_ref) {
-    ExitReason reason{};
-    try {
-      reason = co_await actor->start();
-    } catch (...) {
-      reason.kind = ExitReason::Kind::error;
-    }
-    notify_exit(actor_ref, reason);
-    actors_.erase(actor_ref);
-    co_return;
-  }
-
-  template <typename ActorType, typename... Args>
-  ActorRef spawn_impl(ActorRef linker, ActorRef monitor_ref, Args&&... args) {
-    auto actor =
-        std::make_shared<ActorType>(*this, std::forward<Args>(args)...);
-    auto actor_ref = next_actor_ref();
-    actor->set_actor_ref(actor_ref);
-    actors_.emplace(actor_ref, ActorEntry{actor, [actor](std::any&& message) {
-                                            detail::dispatch_any_message(
-                                                actor, std::move(message));
-                                          }});
-
-    if (linker.valid()) {
-      link(linker, actor_ref);
-    }
-    if (monitor_ref.valid()) {
-      monitor(monitor_ref, actor_ref);
-    }
-
-    run_actor(actor, actor_ref).detach(*this);
-    return actor_ref;
-  }
-
-  ActorRef next_actor_ref() noexcept {
-    ActorRef actor_ref{next_actor_id_};
-    ++next_actor_id_;
-    return actor_ref;
-  }
-
-  bool actor_exists(ActorRef actor_ref) const {
-    return actors_.find(actor_ref) != actors_.end();
-  }
-
-  void notify_exit(ActorRef actor_ref, const ExitReason& reason) {
-    auto links_entry = links_.find(actor_ref);
-    if (links_entry != links_.end()) {
-      for (auto linked : links_entry->second) {
-        send(linked, ExitSignal{actor_ref, reason});
-        auto reverse_entry = links_.find(linked);
-        if (reverse_entry != links_.end()) {
-          auto& reverse_links = reverse_entry->second;
-          reverse_links.erase(std::remove(reverse_links.begin(),
-                                          reverse_links.end(), actor_ref),
-                              reverse_links.end());
-        }
-      }
-      links_.erase(links_entry);
-    }
-
-    auto monitors_entry = monitors_.find(actor_ref);
-    if (monitors_entry != monitors_.end()) {
-      for (auto monitor_ref : monitors_entry->second) {
-        send(monitor_ref, DownSignal{actor_ref, reason});
-      }
-      monitors_.erase(monitors_entry);
-    }
-  }
-
   void deliver_stop(ActorRef target, ExitReason reason) {
-    auto entry = actors_.find(target);
-    if (entry == actors_.end()) {
-      return;
-    }
-    entry->second.control->stop(reason);
+    this->actors_.at(target).control->stop(reason);
   }
 
   void process_due_timers() {
@@ -324,12 +205,8 @@ class DeterministicScheduler {
 
   std::deque<std::coroutine_handle<>> ready_;
   std::multimap<time_point, std::function<void()>> timers_;
-  std::map<ActorRef, ActorEntry> actors_;
-  std::map<ActorRef, std::vector<ActorRef>> links_;
-  std::map<ActorRef, std::vector<ActorRef>> monitors_;
   std::deque<StopRequest> pending_stops_;
   time_point current_time_{};
-  uint64_t next_actor_id_ = 1;
   std::mt19937_64 rng_;
   bool stop_delivery_deferred_ = false;
 };

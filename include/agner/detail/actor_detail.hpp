@@ -8,7 +8,7 @@
 #include <utility>
 #include <variant>
 
-#include "actor_concepts.hpp"
+#include "agner/actor_concepts.hpp"
 
 namespace agner::detail {
 
@@ -50,45 +50,9 @@ struct list_push<type_list<Types...>, Type> {
 };
 
 template <typename List, typename Type>
-struct list_push_front;
-
-template <typename... Types, typename Type>
-struct list_push_front<type_list<Types...>, Type> {
-  using type = type_list<Type, Types...>;
-};
-
-template <typename List, typename Type>
 using list_push_unique_t =
     std::conditional_t<list_contains<List, Type>::value, List,
                        typename list_push<List, Type>::type>;
-
-template <typename List>
-struct list_back;
-
-template <typename Head, typename... Tail>
-struct list_back<type_list<Head, Tail...>> {
-  using type = typename list_back<type_list<Tail...>>::type;
-};
-
-template <typename Head>
-struct list_back<type_list<Head>> {
-  using type = Head;
-};
-
-template <typename List>
-struct list_pop_back;
-
-template <typename Head>
-struct list_pop_back<type_list<Head>> {
-  using type = type_list<>;
-};
-
-template <typename Head, typename... Tail>
-struct list_pop_back<type_list<Head, Tail...>> {
-  using type =
-      typename list_push_front<typename list_pop_back<type_list<Tail...>>::type,
-                               Head>::type;
-};
 
 template <typename List, typename Visitor, typename Message>
 struct add_result_if_invocable {
@@ -175,14 +139,14 @@ template <typename Variant, typename List>
 using receive_result_from_list_t =
     typename receive_result_from_list<Variant, List>::type;
 
-template <typename Variant, typename Visitor, typename Storage>
-bool invoke_visitor(Variant& variant, Visitor& visitor, Storage& storage) {
+bool invoke_visitor(auto& variant, auto& visitor, auto& storage) {
   bool matched = false;
   std::visit(
       [&](auto& message) {
         using Message = std::decay_t<decltype(message)>;
-        if constexpr (MessageVisitor<Visitor&, Message>) {
-          if constexpr (std::is_same_v<Storage, std::monostate>) {
+        if constexpr (MessageVisitor<decltype(visitor), Message>) {
+          if constexpr (std::is_same_v<std::decay_t<decltype(storage)>,
+                                       std::monostate>) {
             std::invoke(visitor, message);
           } else {
             storage = std::invoke(visitor, message);
@@ -194,19 +158,9 @@ bool invoke_visitor(Variant& variant, Visitor& visitor, Storage& storage) {
   return matched;
 }
 
-template <typename Variant, typename Storage, typename Visitor>
-bool try_match_visitors(Variant& variant, Storage& storage, Visitor& visitor) {
-  return invoke_visitor(variant, visitor, storage);
-}
-
-template <typename Variant, typename Storage, typename Visitor,
-          typename... Visitors>
-bool try_match_visitors(Variant& variant, Storage& storage, Visitor& visitor,
-                        Visitors&... visitors) {
-  if (invoke_visitor(variant, visitor, storage)) {
-    return true;
-  }
-  return try_match_visitors(variant, storage, visitors...);
+template <typename... Visitors>
+bool try_match_visitors(auto& variant, auto& storage, Visitors&... visitors) {
+  return (invoke_visitor(variant, visitors, storage) || ...);
 }
 
 template <typename ActorType, typename Message>
