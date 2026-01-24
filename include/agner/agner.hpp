@@ -12,32 +12,29 @@
  * #include <agner/agner.hpp>
  * using namespace agner;
  *
- * struct Ping {};
+ * struct Ping { ActorRef sender; };
  * struct Pong {};
  *
  * class PongActor : public Actor<Scheduler, PongActor, Messages<Ping>> {
  *  public:
- *   using Actor::Actor;
  *   task<void> run() {
- *     co_await receive([&](Ping&) { send(sender_, Pong{}); });
+ *     co_await receive([&](Ping& p) { send(p.sender, Pong{}); });
  *   }
- *   ActorRef sender_;
  * };
  *
  * class PingActor : public Actor<Scheduler, PingActor, Messages<Pong>> {
  *  public:
- *   using Actor::Actor;
  *   task<void> run() {
  *     auto pong = spawn<PongActor>();
- *     send(pong, Ping{});
- *     co_await receive([](Pong&) { /* received reply */ });
+ *     send(pong, Ping{self()});
+ *     co_await receive([](Pong&) {});
  *   }
  * };
  *
  * int main() {
  *   Scheduler sched;
  *   sched.spawn<PingActor>();
- *   sched.run();
+ *   return sched.run();
  * }
  * @endcode
  */
