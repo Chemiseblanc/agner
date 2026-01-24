@@ -4,25 +4,13 @@
 #include <coroutine>
 #include <utility>
 
-#include "actor_control.hpp"
+#include "agner/actor_concepts.hpp"
+#include "agner/actor_control.hpp"
+#include "agner/detail/scheduler_concept_detail.hpp"
 
 namespace agner {
 
-namespace detail {
-
-struct SchedulerProbeMessage {};
-
-template <typename SchedulerType>
-class SchedulerProbeActor : public ActorControl {
- public:
-  explicit SchedulerProbeActor(SchedulerType&) {}
-
-  void stop(ExitReason) override {}
-  ExitReason exit_reason() const noexcept override { return {}; }
-};
-
-}  // namespace detail
-
+/// @brief Concept defining the scheduler interface for actor execution.
 template <typename SchedulerType>
 concept SchedulerLike = requires(
     SchedulerType scheduler, std::coroutine_handle<> handle,

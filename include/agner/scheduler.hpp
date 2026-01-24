@@ -1,44 +1,46 @@
 #pragma once
 
-#include <algorithm>
-#include <any>
-#include <cassert>
+/**
+ * @file scheduler.hpp
+ * @brief Event loop scheduler for running actors and timers.
+ *
+ * The Scheduler executes coroutines, manages actor lifecycles, and handles
+ * delayed callbacks using a single-threaded cooperative event loop.
+ */
+
 #include <chrono>
 #include <coroutine>
 #include <deque>
 #include <functional>
 #include <map>
-#include <memory>
 #include <thread>
-#include <utility>
-#include <vector>
 
-#include "actor_control.hpp"
-#include "actor_detail.hpp"
-#include "scheduler_concept.hpp"
-#include "task.hpp"
+#include "agner/scheduler_base.hpp"
 
 namespace agner {
 
-class Scheduler {
+/// @brief Default single-threaded scheduler implementation.
+class Scheduler : public SchedulerBase<Scheduler> {
  public:
+  /// Clock type used for timing.
   using Clock = std::chrono::steady_clock;
-#if defined(AGNER_TESTING)
-  friend struct SchedulerTestAccess;
-#endif
 
+  /// @brief Schedule a coroutine handle for execution.
   void schedule(std::coroutine_handle<> handle) {
     if (handle) {
       ready_.push_back(handle);
     }
   }
 
-  template <typename Rep, typename Period, typename Fn>
-  void schedule_after(std::chrono::duration<Rep, Period> delay, Fn&& fn) {
+  /// @brief Schedule a callback to run after a delay.
+  /// @param delay Duration to wait before invoking the callback.
+  /// @param fn Callback to invoke.
+  void schedule_after(DurationLike auto delay, std::invocable auto&& fn) {
     timers_.emplace(Clock::now() + delay,
-                    std::function<void()>(std::forward<Fn>(fn)));
+                    std::function<void()>(std::forward<decltype(fn)>(fn)));
   }
 
+  /// @brief Run the event loop until all work is complete.
   void run() {
     while (!ready_.empty() || !timers_.empty()) {
       if (!ready_.empty()) {
@@ -63,152 +65,16 @@ class Scheduler {
     }
   }
 
-  template <typename ActorType, typename... Args>
-  ActorRef spawn(Args&&... args) {
-    return spawn_impl<ActorType>(ActorRef{}, ActorRef{},
-                                 std::forward<Args>(args)...);
-  }
-
-  template <typename ActorType, typename... Args>
-  ActorRef spawn_link(ActorRef linker, Args&&... args) {
-    return spawn_impl<ActorType>(linker, ActorRef{},
-                                 std::forward<Args>(args)...);
-  }
-
-  template <typename ActorType, typename... Args>
-  ActorRef spawn_monitor(ActorRef monitor, Args&&... args) {
-    return spawn_impl<ActorType>(ActorRef{}, monitor,
-                                 std::forward<Args>(args)...);
-  }
-
-  template <typename Message>
-  void send(ActorRef target, Message&& message) {
-    auto entry = actors_.find(target);
-    if (entry == actors_.end()) {
-      return;
-    }
-    entry->second.send(std::any(std::forward<Message>(message)));
-  }
-
+  /// @brief Request an actor to stop.
+  /// @param target The actor to stop.
+  /// @param reason Exit reason to set.
   void stop(ActorRef target, ExitReason reason = {}) {
-    auto entry = actors_.find(target);
-    if (entry == actors_.end()) {
-      return;
-    }
-    entry->second.control->stop(reason);
-  }
-
-  void link(ActorRef left, ActorRef right) {
-    if (!left.valid() || !right.valid()) {
-      return;
-    }
-    if (!actor_exists(left) || !actor_exists(right)) {
-      return;
-    }
-    links_[left].push_back(right);
-    links_[right].push_back(left);
-  }
-
-  void monitor(ActorRef monitor_ref, ActorRef target_ref) {
-    if (!monitor_ref.valid() || !target_ref.valid()) {
-      return;
-    }
-    if (!actor_exists(monitor_ref) || !actor_exists(target_ref)) {
-      return;
-    }
-    monitors_[target_ref].push_back(monitor_ref);
+    this->actors_.at(target).control->stop(reason);
   }
 
  private:
-  struct ActorEntry {
-    std::shared_ptr<ActorControl> control;
-    std::function<void(std::any&&)> send;
-  };
-
-  task<void> run_task(task<ExitReason> actor_task, ActorRef actor_ref) {
-    ExitReason reason{};
-    try {
-      reason = co_await actor_task;
-    } catch (...) {
-      reason.kind = ExitReason::Kind::error;
-    }
-    notify_exit(actor_ref, reason);
-    actors_.erase(actor_ref);
-    co_return;
-  }
-
-  template <typename ActorType>
-  task<void> run_actor(std::shared_ptr<ActorType> actor, ActorRef actor_ref) {
-    co_return co_await run_task(actor->start(), actor_ref);
-  }
-
-  template <typename ActorType, typename... Args>
-  ActorRef spawn_impl(ActorRef linker, ActorRef monitor_ref, Args&&... args) {
-    auto actor =
-        std::make_shared<ActorType>(*this, std::forward<Args>(args)...);
-    auto actor_ref = next_actor_ref();
-    actor->set_actor_ref(actor_ref);
-    actors_.emplace(actor_ref, ActorEntry{actor, [actor](std::any&& message) {
-                                            detail::dispatch_any_message(
-                                                actor, std::move(message));
-                                          }});
-
-    setup_links(linker, monitor_ref, actor_ref);
-
-    run_actor(actor, actor_ref).detach(*this);
-    return actor_ref;
-  }
-
-  void setup_links(ActorRef linker, ActorRef monitor_ref, ActorRef actor_ref) {
-    if (linker.valid()) {
-      link(linker, actor_ref);
-    }
-    if (monitor_ref.valid()) {
-      monitor(monitor_ref, actor_ref);
-    }
-  }
-
-  bool actor_exists(ActorRef actor_ref) const {
-    return actors_.find(actor_ref) != actors_.end();
-  }
-
-  void notify_exit(ActorRef actor_ref, const ExitReason& reason) {
-    auto links_entry = links_.find(actor_ref);
-    if (links_entry != links_.end()) {
-      for (auto linked : links_entry->second) {
-        send(linked, ExitSignal{actor_ref, reason});
-        auto reverse_entry = links_.find(linked);
-        if (reverse_entry != links_.end()) {
-          auto& reverse_links = reverse_entry->second;
-          reverse_links.erase(std::remove(reverse_links.begin(),
-                                          reverse_links.end(), actor_ref),
-                              reverse_links.end());
-        }
-      }
-      links_.erase(links_entry);
-    }
-
-    auto monitors_entry = monitors_.find(actor_ref);
-    if (monitors_entry != monitors_.end()) {
-      for (auto monitor_ref : monitors_entry->second) {
-        send(monitor_ref, DownSignal{actor_ref, reason});
-      }
-      monitors_.erase(monitors_entry);
-    }
-  }
-
-  ActorRef next_actor_ref() noexcept {
-    ActorRef actor_ref{next_actor_id_};
-    ++next_actor_id_;
-    return actor_ref;
-  }
-
   std::deque<std::coroutine_handle<>> ready_;
   std::multimap<Clock::time_point, std::function<void()>> timers_;
-  std::map<ActorRef, ActorEntry> actors_;
-  std::map<ActorRef, std::vector<ActorRef>> links_;
-  std::map<ActorRef, std::vector<ActorRef>> monitors_;
-  uint64_t next_actor_id_ = 1;
 };
 
 }  // namespace agner
