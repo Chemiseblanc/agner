@@ -45,10 +45,37 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
 
   SchedulerType& scheduler() noexcept { return scheduler_; }
 
+  ActorRef self() const noexcept { return this->actor_ref(); }
+
   template <typename Message>
   void send(Message&& message) {
     enqueue_message(std::forward<Message>(message));
   }
+
+  template <typename Message>
+  void send(ActorRef target, Message&& message) {
+    scheduler_.send(target, std::forward<Message>(message));
+  }
+
+  template <typename ActorType, typename... Args>
+  ActorRef spawn(Args&&... args) {
+    return scheduler_.template spawn<ActorType>(std::forward<Args>(args)...);
+  }
+
+  template <typename ActorType, typename... Args>
+  ActorRef spawn_link(Args&&... args) {
+    return scheduler_.template spawn_link<ActorType>(
+        self(), std::forward<Args>(args)...);
+  }
+
+  template <typename ActorType, typename... Args>
+  ActorRef spawn_monitor(Args&&... args) {
+    return scheduler_.template spawn_monitor<ActorType>(
+        self(), std::forward<Args>(args)...);
+  }
+
+  void link(ActorRef other) { scheduler_.link(self(), other); }
+  void monitor(ActorRef other) { scheduler_.monitor(self(), other); }
 
   template <typename... Visitors>
   task<detail::receive_result_t<message_variant, Visitors...>> receive(
@@ -78,24 +105,18 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     co_return co_await awaiter;
   }
 
-  task<void> start() {
+  task<ExitReason> start() {
     co_await static_cast<Derived&>(*this).run();
-    notify_exit(exit_reason_.value_or(ExitReason{ExitReason::Kind::normal}));
+    co_return exit_reason();
   }
 
   void stop(ExitReason reason = {}) override {
     exit_reason_ = reason;
-    enqueue_message(ExitSignal{shared_from_this(), reason});
+    enqueue_message(ExitSignal{self(), reason});
   }
 
-  void deliver_exit(const ExitReason& reason,
-                    const std::shared_ptr<ActorControl>& from) override {
-    enqueue_message(ExitSignal{from, reason});
-  }
-
-  void deliver_down(const ExitReason& reason,
-                    const std::shared_ptr<ActorControl>& from) override {
-    enqueue_message(DownSignal{from, reason});
+  ExitReason exit_reason() const noexcept override {
+    return exit_reason_.value_or(ExitReason{ExitReason::Kind::normal});
   }
 
  private:
@@ -202,11 +223,14 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     if (!pending_) {
       return;
     }
-    if (pending_->try_match()) {
-      auto handle = pending_->handle;
-      pending_.reset();
+    auto pending = pending_;
+    pending_.reset();
+    if (pending->try_match()) {
+      auto handle = pending->handle;
       scheduler_.schedule(handle);
+      return;
     }
+    pending_ = std::move(pending);
   }
 
   template <typename Message>

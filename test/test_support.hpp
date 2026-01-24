@@ -3,7 +3,6 @@
 #include <chrono>
 #include <coroutine>
 #include <exception>
-#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <utility>
@@ -13,6 +12,8 @@
 #include "deterministic_scheduler.hpp"
 
 namespace agner::test_support {
+
+using agner::ActorRef;
 
 struct Ping {
   int value;
@@ -28,6 +29,14 @@ struct SignalCapture {
   std::optional<ExitReason::Kind> exit_kind;
   std::optional<ExitReason::Kind> down_kind;
 };
+
+inline ExitSignal make_exit_signal(ExitReason::Kind kind) {
+  return ExitSignal{ActorRef{}, ExitReason{kind}};
+}
+
+inline DownSignal make_down_signal(ExitReason::Kind kind) {
+  return DownSignal{ActorRef{}, ExitReason{kind}};
+}
 
 template <typename Derived, typename MessagePack>
 using TestActor = Actor<Scheduler, Derived, MessagePack>;
@@ -61,9 +70,8 @@ class Worker : public TestActor<Worker, Messages<Stop>> {
 
 class Observer : public TestActor<Observer, Messages<>> {
  public:
-  Observer(Scheduler& scheduler, std::shared_ptr<agner::ActorControl> target,
-           SignalCapture* capture)
-      : Actor(scheduler), target_(std::move(target)), capture_(capture) {}
+  Observer(Scheduler& scheduler, ActorRef target, SignalCapture* capture)
+      : Actor(scheduler), target_(target), capture_(capture) {}
 
   task<void> run() {
     monitor(target_);
@@ -74,7 +82,7 @@ class Observer : public TestActor<Observer, Messages<>> {
   }
 
  private:
-  std::shared_ptr<agner::ActorControl> target_;
+  ActorRef target_{};
   SignalCapture* capture_;
 };
 
@@ -96,10 +104,8 @@ class SignalObserver : public TestActor<SignalObserver, Messages<>> {
 
 class LinkedObserver : public TestActor<LinkedObserver, Messages<>> {
  public:
-  LinkedObserver(Scheduler& scheduler,
-                 std::shared_ptr<agner::ActorControl> target,
-                 SignalCapture* capture)
-      : Actor(scheduler), target_(std::move(target)), capture_(capture) {}
+  LinkedObserver(Scheduler& scheduler, ActorRef target, SignalCapture* capture)
+      : Actor(scheduler), target_(target), capture_(capture) {}
 
   task<void> run() {
     link(target_);
@@ -115,7 +121,7 @@ class LinkedObserver : public TestActor<LinkedObserver, Messages<>> {
   }
 
  private:
-  std::shared_ptr<agner::ActorControl> target_;
+  ActorRef target_{};
   SignalCapture* capture_;
 };
 
@@ -247,13 +253,40 @@ class DeferredTryReceive
   bool* timed_out_;
 };
 
+struct SpawnReport {
+  int exit_signals = 0;
+  int down_signals = 0;
+};
+
+class SpawnTester : public TestActor<SpawnTester, Messages<>> {
+ public:
+  SpawnTester(Scheduler& scheduler, SpawnReport* report)
+      : Actor(scheduler), report_(report) {}
+
+  task<void> run() {
+    auto worker = spawn<Worker>();
+    auto linked = spawn_link<Worker>();
+    auto monitored = spawn_monitor<Worker>();
+
+    send(worker, Stop{});
+    send(linked, Stop{});
+    send(monitored, Stop{});
+
+    for (int i = 0; i < 2; ++i) {
+      co_await receive([&](ExitSignal&) { ++report_->exit_signals; },
+                       [&](DownSignal&) { ++report_->down_signals; });
+    }
+    co_return;
+  }
+
+ private:
+  SpawnReport* report_;
+};
+
 class DummyControl : public ActorControl {
  public:
   void stop(ExitReason) override {}
-  void deliver_exit(const ExitReason&,
-                    const std::shared_ptr<ActorControl>&) override {}
-  void deliver_down(const ExitReason&,
-                    const std::shared_ptr<ActorControl>&) override {}
+  ExitReason exit_reason() const noexcept override { return {}; }
 };
 
 class Stoppable : public TestActor<Stoppable, Messages<>> {

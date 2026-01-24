@@ -23,7 +23,7 @@ TEST(Actor, SpawnAndReceive) {
   int value = 0;
   auto actor = scheduler.spawn<Collector>(&value);
 
-  actor->send(Ping{42});
+  scheduler.send(actor, Ping{42});
   scheduler.run();
 
   EXPECT_EQ(value, 42);
@@ -38,12 +38,14 @@ TEST(Actor, TryReceiveTimeout) {
   int value = 0;
   auto actor = scheduler.spawn<TimeoutReceiver>(&value);
 
-  scheduler.schedule_after(agner::Scheduler::Clock::duration::zero(), [actor] {
-    actor->deliver_exit({agner::ExitReason::Kind::error}, actor);
-  });
-  scheduler.schedule_after(agner::Scheduler::Clock::duration::zero(), [actor] {
-    actor->deliver_down({agner::ExitReason::Kind::error}, actor);
-  });
+  scheduler.schedule_after(
+      agner::Scheduler::Clock::duration::zero(), [&scheduler, actor] {
+        scheduler.send(actor, make_exit_signal(agner::ExitReason::Kind::error));
+      });
+  scheduler.schedule_after(
+      agner::Scheduler::Clock::duration::zero(), [&scheduler, actor] {
+        scheduler.send(actor, make_down_signal(agner::ExitReason::Kind::error));
+      });
 
   scheduler.run();
 
@@ -59,8 +61,9 @@ TEST(Actor, TryReceiveTimeoutEarlyMessage) {
   int value = 0;
   auto actor = scheduler.spawn<TimeoutReceiver>(&value);
 
-  scheduler.schedule_after(agner::Scheduler::Clock::duration::zero(),
-                           [actor] { actor->send(Ping{8}); });
+  scheduler.schedule_after(
+      agner::Scheduler::Clock::duration::zero(),
+      [&scheduler, actor] { scheduler.send(actor, Ping{8}); });
 
   scheduler.run();
 
@@ -76,7 +79,7 @@ TEST(Actor, TryReceiveSuccess) {
   int value = 0;
   auto actor = scheduler.spawn<TryReceiveSuccess>(&value);
 
-  actor->send(Ping{7});
+  scheduler.send(actor, Ping{7});
   scheduler.run();
 
   EXPECT_EQ(value, 7);
@@ -91,13 +94,14 @@ TEST(Actor, TryReceiveSuccessDelayedSend) {
   int value = 0;
   auto actor = scheduler.spawn<TryReceiveSuccess>(&value);
 
-  scheduler.schedule_after(1ms, [actor] {
-    actor->deliver_exit({agner::ExitReason::Kind::error}, actor);
+  scheduler.schedule_after(1ms, [&scheduler, actor] {
+    scheduler.send(actor, make_exit_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(1ms, [actor] {
-    actor->deliver_down({agner::ExitReason::Kind::error}, actor);
+  scheduler.schedule_after(1ms, [&scheduler, actor] {
+    scheduler.send(actor, make_down_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(2ms, [actor] { actor->send(Ping{9}); });
+  scheduler.schedule_after(
+      2ms, [&scheduler, actor] { scheduler.send(actor, Ping{9}); });
 
   scheduler.run();
 
@@ -128,12 +132,14 @@ TEST(Actor, TryReceiveVoidTimeout) {
   bool timed_out = false;
   auto actor = scheduler.spawn<TryReceiveVoidTimeout>(&received, &timed_out);
 
-  scheduler.schedule_after(agner::Scheduler::Clock::duration::zero(), [actor] {
-    actor->deliver_exit({agner::ExitReason::Kind::error}, actor);
-  });
-  scheduler.schedule_after(agner::Scheduler::Clock::duration::zero(), [actor] {
-    actor->deliver_down({agner::ExitReason::Kind::error}, actor);
-  });
+  scheduler.schedule_after(
+      agner::Scheduler::Clock::duration::zero(), [&scheduler, actor] {
+        scheduler.send(actor, make_exit_signal(agner::ExitReason::Kind::error));
+      });
+  scheduler.schedule_after(
+      agner::Scheduler::Clock::duration::zero(), [&scheduler, actor] {
+        scheduler.send(actor, make_down_signal(agner::ExitReason::Kind::error));
+      });
 
   scheduler.run();
 
@@ -152,8 +158,9 @@ TEST(Actor, TryReceiveVoidTimeoutEarlyMessage) {
   bool timed_out = false;
   auto actor = scheduler.spawn<TryReceiveVoidTimeout>(&received, &timed_out);
 
-  scheduler.schedule_after(agner::Scheduler::Clock::duration::zero(),
-                           [actor] { actor->send(Ping{11}); });
+  scheduler.schedule_after(
+      agner::Scheduler::Clock::duration::zero(),
+      [&scheduler, actor] { scheduler.send(actor, Ping{11}); });
 
   scheduler.run();
 
@@ -170,7 +177,7 @@ TEST(Actor, MultiVisitorCommonResult) {
   int value = 0;
   auto actor = scheduler.spawn<MultiVisitorActor>(&value);
 
-  actor->send(Pong{21});
+  scheduler.send(actor, Pong{21});
   scheduler.run();
 
   EXPECT_EQ(value, 42);
@@ -185,7 +192,7 @@ TEST(Actor, MultiVisitorFirstMatch) {
   int value = 0;
   auto actor = scheduler.spawn<MultiVisitorActor>(&value);
 
-  actor->send(Ping{9});
+  scheduler.send(actor, Ping{9});
   scheduler.run();
 
   EXPECT_EQ(value, 9);
@@ -200,13 +207,29 @@ TEST(Actor, MailboxOrdering) {
   std::vector<int> values;
   auto actor = scheduler.spawn<SequenceCollector>(&values);
 
-  actor->send(Ping{1});
-  actor->send(Ping{2});
+  scheduler.send(actor, Ping{1});
+  scheduler.send(actor, Ping{2});
   scheduler.run();
 
   ASSERT_EQ(values.size(), 2u);
   EXPECT_EQ(values[0], 1);
   EXPECT_EQ(values[1], 2);
+}
+
+// Summary: When an actor spawns linked and monitored children, it shall receive
+// exit and down signals. Description: This test runs `SpawnTester`, which
+// spawns a worker, a linked worker, and a monitored worker, then stops them.
+// The assertions on `report` confirm one exit and one down signal were
+// delivered.
+TEST(Actor, SpawnLinkAndMonitorFromActor) {
+  agner::Scheduler scheduler;
+  SpawnReport report;
+  scheduler.spawn<SpawnTester>(&report);
+
+  scheduler.run();
+
+  EXPECT_EQ(report.exit_signals, 1);
+  EXPECT_EQ(report.down_signals, 1);
 }
 
 // Summary: When no message is available, receive shall suspend until a message
@@ -222,7 +245,7 @@ TEST(Actor, ReceiveSuspendsUntilMessage) {
   scheduler.run_until_idle();
   EXPECT_FALSE(value.has_value());
 
-  actor->send(Ping{11});
+  scheduler.send(actor, Ping{11});
   scheduler.run_until_idle();
 
   ASSERT_TRUE(value.has_value());
@@ -243,7 +266,7 @@ TEST(Actor, TryReceiveSuspendsUntilMessage) {
   EXPECT_FALSE(value.has_value());
   EXPECT_FALSE(timed_out);
 
-  actor->send(Ping{13});
+  scheduler.send(actor, Ping{13});
   scheduler.run_until_idle();
 
   ASSERT_TRUE(value.has_value());
@@ -263,8 +286,8 @@ TEST(Actor, DeferredTryReceiveTimesOut) {
   auto actor = scheduler.spawn<DeferredTryReceive>(&value, &timed_out);
 
   scheduler.run_until_idle();
-  actor->deliver_exit({agner::ExitReason::Kind::error}, actor);
-  actor->deliver_down({agner::ExitReason::Kind::error}, actor);
+  scheduler.send(actor, make_exit_signal(agner::ExitReason::Kind::error));
+  scheduler.send(actor, make_down_signal(agner::ExitReason::Kind::error));
 
   scheduler.run_for(agner::DeterministicScheduler::duration{10});
 
@@ -285,9 +308,9 @@ TEST(Actor, PendingSkipsUnmatchedSystemSignal) {
 
   scheduler.run_until_idle();
 
-  actor->deliver_exit({agner::ExitReason::Kind::error}, actor);
-  actor->deliver_down({agner::ExitReason::Kind::error}, actor);
-  actor->send(Ping{99});
+  scheduler.send(actor, make_exit_signal(agner::ExitReason::Kind::error));
+  scheduler.send(actor, make_down_signal(agner::ExitReason::Kind::error));
+  scheduler.send(actor, Ping{99});
   scheduler.run_until_idle();
 
   ASSERT_TRUE(value.has_value());
@@ -306,9 +329,9 @@ TEST(Actor, TryReceiveTimeoutCancelledWhenMessageArrives) {
 
   scheduler.run_until_idle();
 
-  actor->deliver_exit({agner::ExitReason::Kind::error}, actor);
-  actor->deliver_down({agner::ExitReason::Kind::error}, actor);
-  actor->send(Ping{42});
+  scheduler.send(actor, make_exit_signal(agner::ExitReason::Kind::error));
+  scheduler.send(actor, make_down_signal(agner::ExitReason::Kind::error));
+  scheduler.send(actor, Ping{42});
   scheduler.run_until_idle();
 
   ASSERT_TRUE(value.has_value());
@@ -340,52 +363,58 @@ TEST(Actor, ReceiveSuspendsWithDelayedSignals) {
   auto stoppable = scheduler.spawn<Stoppable>();
   auto combined = scheduler.spawn<SignalObserver>(&combined_capture);
 
-  scheduler.schedule_after(1ms, [collector] {
-    collector->deliver_exit({agner::ExitReason::Kind::error}, collector);
+  scheduler.schedule_after(1ms, [&scheduler, collector] {
+    scheduler.send(collector, make_exit_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(1ms, [collector] {
-    collector->deliver_down({agner::ExitReason::Kind::error}, collector);
+  scheduler.schedule_after(1ms, [&scheduler, collector] {
+    scheduler.send(collector, make_down_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(2ms, [collector] { collector->send(Ping{5}); });
+  scheduler.schedule_after(
+      2ms, [&scheduler, collector] { scheduler.send(collector, Ping{5}); });
 
-  scheduler.schedule_after(1ms, [worker] {
-    worker->deliver_exit({agner::ExitReason::Kind::error}, worker);
+  scheduler.schedule_after(1ms, [&scheduler, worker] {
+    scheduler.send(worker, make_exit_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(1ms, [worker] {
-    worker->deliver_down({agner::ExitReason::Kind::error}, worker);
+  scheduler.schedule_after(1ms, [&scheduler, worker] {
+    scheduler.send(worker, make_down_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(2ms, [worker] { worker->send(Stop{}); });
+  scheduler.schedule_after(
+      2ms, [&scheduler, worker] { scheduler.send(worker, Stop{}); });
 
-  scheduler.schedule_after(1ms, [multi] {
-    multi->deliver_exit({agner::ExitReason::Kind::error}, multi);
+  scheduler.schedule_after(1ms, [&scheduler, multi] {
+    scheduler.send(multi, make_exit_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(1ms, [multi] {
-    multi->deliver_down({agner::ExitReason::Kind::error}, multi);
+  scheduler.schedule_after(1ms, [&scheduler, multi] {
+    scheduler.send(multi, make_down_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(2ms, [multi] { multi->send(Pong{11}); });
+  scheduler.schedule_after(
+      2ms, [&scheduler, multi] { scheduler.send(multi, Pong{11}); });
 
-  scheduler.schedule_after(1ms, [sequence] {
-    sequence->deliver_exit({agner::ExitReason::Kind::error}, sequence);
+  scheduler.schedule_after(1ms, [&scheduler, sequence] {
+    scheduler.send(sequence, make_exit_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(1ms, [sequence] {
-    sequence->deliver_down({agner::ExitReason::Kind::error}, sequence);
+  scheduler.schedule_after(1ms, [&scheduler, sequence] {
+    scheduler.send(sequence, make_down_signal(agner::ExitReason::Kind::error));
   });
-  scheduler.schedule_after(2ms, [sequence] { sequence->send(Ping{1}); });
-  scheduler.schedule_after(3ms, [sequence] { sequence->send(Ping{2}); });
+  scheduler.schedule_after(
+      2ms, [&scheduler, sequence] { scheduler.send(sequence, Ping{1}); });
+  scheduler.schedule_after(
+      3ms, [&scheduler, sequence] { scheduler.send(sequence, Ping{2}); });
 
-  scheduler.schedule_after(1ms, [observer] {
-    observer->deliver_down({agner::ExitReason::Kind::error}, observer);
-  });
-
-  scheduler.schedule_after(1ms, [combined] {
-    combined->deliver_exit({agner::ExitReason::Kind::normal}, combined);
+  scheduler.schedule_after(1ms, [&scheduler, observer] {
+    scheduler.send(observer, make_down_signal(agner::ExitReason::Kind::error));
   });
 
-  scheduler.schedule_after(1ms, [stoppable] {
-    stoppable->deliver_down({agner::ExitReason::Kind::error}, stoppable);
+  scheduler.schedule_after(1ms, [&scheduler, combined] {
+    scheduler.send(combined, make_exit_signal(agner::ExitReason::Kind::normal));
   });
-  scheduler.schedule_after(2ms, [stoppable] {
-    stoppable->deliver_exit({agner::ExitReason::Kind::normal}, stoppable);
+
+  scheduler.schedule_after(1ms, [&scheduler, stoppable] {
+    scheduler.send(stoppable, make_down_signal(agner::ExitReason::Kind::error));
+  });
+  scheduler.schedule_after(2ms, [&scheduler, stoppable] {
+    scheduler.send(stoppable,
+                   make_exit_signal(agner::ExitReason::Kind::normal));
   });
 
   scheduler.run();

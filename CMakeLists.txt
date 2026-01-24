@@ -42,15 +42,15 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(benchmark)
 
 add_executable(agner_tests
-  test/actor_tests.cpp
-  test/actor_control_tests.cpp
-  test/deterministic_scheduler_tests.cpp
-  test/scheduler_tests.cpp
-  test/task_tests.cpp
+  test/actor_test.cpp
+  test/actor_control_test.cpp
+  test/scheduler_test.cpp
+  test/supervisor_test.cpp
+  test/task_test.cpp
 )
 
 add_executable(agner_benchmarks
-  test/actor_benchmarks.cpp
+  benchmark/actor_benchmarks.cpp
 )
 
 target_compile_options(agner_tests PRIVATE -pedantic -Werror -Wall)
@@ -75,8 +75,8 @@ target_link_libraries(agner_benchmarks
 
 if(AGNER_ENABLE_COVERAGE)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(AGNER_COVERAGE_COMPILE_FLAGS -fprofile-instr-generate -fcoverage-mapping -fcoverage-mcdc)
-    set(AGNER_COVERAGE_LINK_FLAGS -fprofile-instr-generate -fcoverage-mapping)
+    set(AGNER_COVERAGE_COMPILE_FLAGS --coverage -fprofile-instr-generate -fcoverage-mapping -fcoverage-mcdc)
+    set(AGNER_COVERAGE_LINK_FLAGS --coverage -fprofile-instr-generate -fcoverage-mapping)
   else()
     set(AGNER_COVERAGE_COMPILE_FLAGS --coverage)
     set(AGNER_COVERAGE_LINK_FLAGS --coverage)

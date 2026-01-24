@@ -173,7 +173,7 @@ void UseCase_Burst(benchmark::State& state) {
       auto sent = sent_count.fetch_add(1, std::memory_order_relaxed) + 1;
       auto received = received_count.load(std::memory_order_relaxed);
       depth_samples.add(sent - received);
-      actor->send(payload);
+      scheduler.send(actor, payload);
     }
     scheduler.run();
     state.PauseTiming();
@@ -214,7 +214,7 @@ void UseCase_SteadyState(benchmark::State& state) {
       auto sent = sent_count.fetch_add(1, std::memory_order_relaxed) + 1;
       auto received = received_count.load(std::memory_order_relaxed);
       depth_samples.add(sent - received);
-      actor->send(payload);
+      scheduler.send(actor, payload);
       scheduler.run();
     }
     state.PauseTiming();
@@ -260,7 +260,7 @@ void UseCase_Backlog(benchmark::State& state) {
             sent_count.fetch_add(1, std::memory_order_relaxed) + 1;
         auto received = received_count.load(std::memory_order_relaxed);
         depth_samples.add(send_value - received);
-        actor->send(payload);
+        scheduler.send(actor, payload);
       }
       sent += chunk;
       scheduler.run();

@@ -1,6 +1,9 @@
 #pragma once
 
+#include <any>
+#include <cassert>
 #include <functional>
+#include <memory>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -204,6 +207,31 @@ bool try_match_visitors(Variant& variant, Storage& storage, Visitor& visitor,
     return true;
   }
   return try_match_visitors(variant, storage, visitors...);
+}
+
+template <typename ActorType, typename Message>
+bool try_send_any(const std::shared_ptr<ActorType>& actor, std::any& message) {
+  using Decayed = std::decay_t<Message>;
+  if (message.type() != typeid(Decayed)) {
+    return false;
+  }
+  actor->send(std::any_cast<Decayed>(std::move(message)));
+  return true;
+}
+
+template <typename ActorType, typename... Messages>
+void dispatch_any_message(const std::shared_ptr<ActorType>& actor,
+                          std::any&& message, type_list<Messages...>) {
+  [[maybe_unused]] bool matched =
+      (try_send_any<ActorType, Messages>(actor, message) || ...);
+}
+
+template <typename ActorType>
+void dispatch_any_message(const std::shared_ptr<ActorType>& actor,
+                          std::any&& message) {
+  using list =
+      typename variant_types<typename ActorType::message_variant>::type;
+  dispatch_any_message(actor, std::move(message), list{});
 }
 
 }  // namespace agner::detail
