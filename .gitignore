@@ -1,6 +1,17 @@
+# Build trees
 artifacts/
 
+# Python
 __pycache__/
-.cache/
+.ruff_cache/
 
+# Clangd
+.cache/
 compile_commands.json
+
+# Coverage
+*.profraw
+*.profdata
+*.gcda
+*.gcno
+*.gcov
