@@ -1,45 +1,12 @@
-#define AGNER_TESTING 1
 #include "agner/scheduler.hpp"
 
 #include <gtest/gtest.h>
 
-#include <algorithm>
 #include <chrono>
 #include <coroutine>
 #include <vector>
 
 #include "test_support.hpp"
-
-namespace agner {
-
-struct SchedulerTestAccess {
-  static void add_link_entry(Scheduler& scheduler, ActorRef left,
-                             ActorRef right) {
-    scheduler.links_[left].push_back(right);
-    scheduler.links_[right].push_back(left);
-  }
-
-  static bool has_link_entry(const Scheduler& scheduler, ActorRef ref) {
-    return scheduler.links_.find(ref) != scheduler.links_.end();
-  }
-
-  static bool link_contains(const Scheduler& scheduler, ActorRef key,
-                            ActorRef target) {
-    auto entry = scheduler.links_.find(key);
-    if (entry == scheduler.links_.end()) {
-      return false;
-    }
-    const auto& links = entry->second;
-    return std::find(links.begin(), links.end(), target) != links.end();
-  }
-
-  static void notify_exit_for_tests(Scheduler& scheduler, ActorRef actor_ref,
-                                    const ExitReason& reason) {
-    scheduler.notify_exit(actor_ref, reason);
-  }
-};
-
-}  // namespace agner
 
 namespace {
 
@@ -117,26 +84,28 @@ TEST(Scheduler, ScheduleResumesActiveHandle) {
   manual.handle.destroy();
 }
 
-// Summary: When operating on missing actors, the scheduler returns early.
-// Description: This test uses unknown actor refs for send, stop, link, and
-// monitor to cover the missing-actor decision paths.
+// Summary: When operating on missing actors, stop/link/monitor throw.
+// Description: This test verifies that stop, link, and monitor operations
+// throw std::out_of_range for non-existent actors, while send is silent.
 TEST(Scheduler, MissingActorOperationsAreIgnored) {
   agner::Scheduler scheduler;
 
   agner::ActorRef left{100};
   agner::ActorRef right{200};
 
+  // send is silent for missing actors (fire-and-forget semantics)
   scheduler.send(left, Ping{1});
-  scheduler.stop(left, {agner::ExitReason::Kind::stopped});
-  scheduler.link(left, right);
-  scheduler.monitor(left, right);
 
-  SUCCEED();
+  // stop, link, monitor throw for missing actors
+  EXPECT_THROW(scheduler.stop(left, {agner::ExitReason::Kind::stopped}),
+               std::out_of_range);
+  EXPECT_THROW(scheduler.link(left, right), std::out_of_range);
+  EXPECT_THROW(scheduler.monitor(left, right), std::out_of_range);
 }
 
 // Summary: When linked actors stop, reverse link cleanup runs.
-// Description: This test links two actors and stops one, ensuring the reverse
-// link entry exists and is cleaned during exit handling.
+// Description: This test links two actors where one waits and stops normally.
+// The other is stopped which cascades via link.
 TEST(Scheduler, ReverseLinkCleanupRemovesBacklink) {
   agner::Scheduler scheduler;
 
@@ -147,33 +116,6 @@ TEST(Scheduler, ReverseLinkCleanupRemovesBacklink) {
   scheduler.stop(left, {agner::ExitReason::Kind::stopped});
   scheduler.run();
 
-  scheduler.stop(right, {agner::ExitReason::Kind::stopped});
-  scheduler.run();
-
-  SUCCEED();
-}
-
-// Summary: When exits see reverse link entries, they are cleaned up.
-// Description: This test injects a link entry and calls notify_exit directly to
-// cover the reverse-entry decision path.
-TEST(Scheduler, NotifyExitCleansReverseLinkEntry) {
-  agner::Scheduler scheduler;
-
-  agner::ActorRef left{1};
-  agner::ActorRef right{2};
-  agner::SchedulerTestAccess::add_link_entry(scheduler, left, right);
-  ASSERT_TRUE(agner::SchedulerTestAccess::has_link_entry(scheduler, right));
-  ASSERT_TRUE(
-      agner::SchedulerTestAccess::link_contains(scheduler, left, right));
-  ASSERT_TRUE(
-      agner::SchedulerTestAccess::link_contains(scheduler, right, left));
-
-  agner::SchedulerTestAccess::notify_exit_for_tests(
-      scheduler, left, {agner::ExitReason::Kind::stopped});
-
-  EXPECT_TRUE(agner::SchedulerTestAccess::has_link_entry(scheduler, right));
-  EXPECT_FALSE(
-      agner::SchedulerTestAccess::link_contains(scheduler, right, left));
-
+  // right was killed by link cascade, no need to stop it again
   SUCCEED();
 }

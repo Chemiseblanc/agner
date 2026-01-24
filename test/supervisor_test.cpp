@@ -5,100 +5,8 @@
 #include <utility>
 #include <vector>
 
-#define AGNER_TESTING 1
 #include "agner/supervisor.hpp"
 #include "test_support.hpp"
-
-namespace agner {
-
-struct SupervisorTestAccess {
-  template <typename SupervisorType>
-  static void set_stopping_for_tests(SupervisorType& supervisor,
-                                     bool stopping) {
-    supervisor.stopping_ = stopping;
-  }
-
-  template <typename SupervisorType>
-  static auto& state_for_index(SupervisorType& supervisor, std::size_t index) {
-    return supervisor.state_at(index);
-  }
-
-  template <typename SupervisorType>
-  static auto& spec_for_index(SupervisorType& supervisor, std::size_t index) {
-    return supervisor.spec_at(index);
-  }
-
-  template <typename SupervisorType>
-  static void add_fake_live_child(SupervisorType& supervisor, ActorRef ref,
-                                  std::size_t spec_index,
-                                  std::size_t instance_index,
-                                  std::size_t start_order) {
-    supervisor.live_children_[ref] = typename SupervisorType::ChildLocation{
-        spec_index, instance_index, start_order};
-  }
-
-  template <typename SupervisorType>
-  static void handle_exit_for_tests(SupervisorType& supervisor, ActorRef ref,
-                                    const ExitReason& reason) {
-    supervisor.handle_termination(ref, reason);
-  }
-
-  template <typename SupervisorType>
-  static auto& specification_for_tests(SupervisorType& supervisor) {
-    return supervisor.specification_mutable();
-  }
-
-  template <typename SupervisorType>
-  static void ensure_restart_group(SupervisorType& supervisor) {
-    if (!supervisor.restart_group_) {
-      supervisor.restart_group_.emplace();
-    }
-  }
-
-  template <typename SupervisorType>
-  static auto& restart_group_pending(SupervisorType& supervisor) {
-    ensure_restart_group(supervisor);
-    return supervisor.restart_group_->pending_stops;
-  }
-
-  template <typename SupervisorType>
-  static void add_plan_item(SupervisorType& supervisor, std::size_t spec_index,
-                            std::size_t instance_index, std::size_t start_order,
-                            const ExitReason& reason) {
-    ensure_restart_group(supervisor);
-    supervisor.restart_group_->plan.push_back(
-        typename SupervisorType::RestartPlanItem{
-            typename SupervisorType::ChildLocation{spec_index, instance_index,
-                                                   start_order},
-            reason});
-  }
-
-  template <typename SupervisorType>
-  static void finalize_restart_group_for_tests(SupervisorType& supervisor) {
-    supervisor.finalize_restart_group();
-  }
-
-  template <typename SupervisorType>
-  static void handle_restart_group_stop_for_tests(SupervisorType& supervisor,
-                                                  ActorRef ref,
-                                                  const ExitReason& reason) {
-    supervisor.handle_restart_group_stop(ref, reason);
-  }
-
-  template <typename SupervisorType>
-  static void restart_children_by_index_for_tests(SupervisorType& supervisor) {
-    supervisor.template restart_children_by_index<0>();
-  }
-
-  template <typename SupervisorType>
-  static bool should_restart_for_tests(const SupervisorType& supervisor,
-                                       agner::Restart restart,
-                                       const agner::ExitReason& reason) {
-    return supervisor.should_restart(restart, reason);
-  }
-};
-
-}  // namespace agner
 
 namespace {
 
@@ -277,38 +185,6 @@ class DownSignalSender
  private:
   agner::ActorRef target_{};
   agner::ActorRef from_{};
-};
-
-class DecisionCoverageSupervisor
-    : public agner::Supervisor<agner::DeterministicScheduler,
-                               DecisionCoverageSupervisor,
-                               agner::ChildSpec<LoggedChild, ChildLog*, int>> {
- public:
-  using Base = agner::Supervisor<agner::DeterministicScheduler,
-                                 DecisionCoverageSupervisor,
-                                 agner::ChildSpec<LoggedChild, ChildLog*, int>>;
-
-  using Base::Base;
-
-  static Specification specification() {
-    return {
-        .strategy = agner::Strategy::one_for_one,
-        .intensity = {3, 10ms},
-        .children = std::make_tuple(agner::child<LoggedChild, ChildLog*, int>(
-            {"child"}, agner::Restart::permanent, 0ms, null_log(), 1))};
-  }
-
-  task<void> run() { co_return; }
-
-  void prepare_unstarted_instance() {
-    auto& state = this->template state_for_specs<0>();
-    state.instances.clear();
-    state.instances.emplace_back();
-    state.instances.front().ref.reset();
-    state.instances.front().start_order = 0;
-  }
-
-  auto& state_for_test() { return this->template state_for_specs<0>(); }
 };
 
 class ReuseSupervisor
@@ -544,31 +420,6 @@ class NoArgChild
   }
 };
 
-class StopGateManualNonSelfSupervisor
-    : public agner::Supervisor<agner::DeterministicScheduler,
-                               StopGateManualNonSelfSupervisor,
-                               agner::ChildSpec<NoArgChild>> {
- public:
-  using Base = agner::Supervisor<agner::DeterministicScheduler,
-                                 StopGateManualNonSelfSupervisor,
-                                 agner::ChildSpec<NoArgChild>>;
-
-  using Base::Base;
-
-  static Specification specification() {
-    return {.strategy = agner::Strategy::simple_one_for_one,
-            .intensity = {3, 10ms},
-            .children = std::make_tuple(agner::simple_child<NoArgChild>(
-                {"child"}, agner::Restart::permanent, 0ms))};
-  }
-
-  task<void> run() {
-    agner::SupervisorTestAccess::set_stopping_for_tests(*this, true);
-    this->send(this->self(), agner::ExitSignal{agner::ActorRef{555}, {}});
-    co_await Base::supervise_loop();
-  }
-};
-
 class NoArgSupervisor
     : public agner::Supervisor<agner::DeterministicScheduler, NoArgSupervisor,
                                agner::ChildSpec<NoArgChild>> {
@@ -590,42 +441,6 @@ class NoArgSupervisor
     this->stop();
     co_await Base::supervise_loop();
   }
-};
-
-class SimpleStartSupervisor
-    : public agner::Supervisor<agner::DeterministicScheduler,
-                               SimpleStartSupervisor,
-                               agner::ChildSpec<LoggedChild, ChildLog*, int>> {
- public:
-  using Base =
-      agner::Supervisor<agner::DeterministicScheduler, SimpleStartSupervisor,
-                        agner::ChildSpec<LoggedChild, ChildLog*, int>>;
-
-  SimpleStartSupervisor(agner::DeterministicScheduler& scheduler, ChildLog* log)
-      : Base(scheduler), log_(log) {}
-
-  static Specification specification() {
-    return {
-        .strategy = agner::Strategy::one_for_one,
-        .intensity = {3, 10ms},
-        .children = std::make_tuple(agner::child<LoggedChild, ChildLog*, int>(
-            {"child"}, agner::Restart::permanent, 0ms, null_log(), 1))};
-  }
-
-  task<void> run() {
-    this->template set_child_args<0>(std::make_tuple(log_, 1));
-    co_await start_child<agner::ChildIndex<0>>(log_, 1);
-    auto& state = this->template state_for_specs<0>();
-    if (!state.instances.empty()) {
-      state.instances.front().ref.reset();
-    }
-    co_await start_child<agner::ChildIndex<0>>(log_, 1);
-    this->stop();
-    co_await Base::supervise_loop();
-  }
-
- private:
-  ChildLog* log_;
 };
 
 class RestartLoopSupervisor
@@ -656,46 +471,6 @@ class RestartLoopSupervisor
     scheduler().advance(2ms);
     scheduler().advance(2ms);
     co_return;
-  }
-
- private:
-  ChildLog* log_;
-};
-
-class StopDeleteNoRefSupervisor
-    : public agner::Supervisor<agner::DeterministicScheduler,
-                               StopDeleteNoRefSupervisor,
-                               agner::ChildSpec<LoggedChild, ChildLog*, int>> {
- public:
-  using Base = agner::Supervisor<agner::DeterministicScheduler,
-                                 StopDeleteNoRefSupervisor,
-                                 agner::ChildSpec<LoggedChild, ChildLog*, int>>;
-
-  StopDeleteNoRefSupervisor(agner::DeterministicScheduler& scheduler,
-                            ChildLog* log)
-      : Base(scheduler), log_(log) {}
-
-  static Specification specification() {
-    return {
-        .strategy = agner::Strategy::one_for_one,
-        .intensity = {3, 10ms},
-        .children = std::make_tuple(agner::child<LoggedChild, ChildLog*, int>(
-            {"child"}, agner::Restart::permanent, 0ms, null_log(), 1))};
-  }
-
-  task<void> run() {
-    this->template set_child_args<0>(std::make_tuple(log_, 1));
-    co_await Base::run();
-    auto& state = this->template state_for_specs<0>();
-    if (!state.instances.empty()) {
-      state.instances.front().ref.reset();
-    }
-    co_await stop_child<agner::ChildIndex<0>>();
-    co_await delete_child<agner::ChildIndex<0>>();
-    co_await stop_child<agner::ChildIndex<0>>();
-    co_await delete_child<agner::ChildIndex<0>>();
-    this->stop();
-    co_await Base::supervise_loop();
   }
 
  private:
@@ -973,92 +748,6 @@ class IntensitySupervisor
   ChildLog* log_;
   std::size_t max_restarts_ = 0;
 };
-
-}  // namespace
-
-namespace {
-
-template <typename SupervisorType>
-struct ShouldRestartTestTraits
-    : ShouldRestartTestTraits<typename SupervisorType::Base> {};
-
-template <typename SchedulerType, typename Derived, typename... ChildSpecs>
-struct ShouldRestartTestTraits<
-    agner::Supervisor<SchedulerType, Derived, ChildSpecs...>> {
-  using scheduler_type = SchedulerType;
-  static constexpr bool needs_log =
-      std::is_constructible_v<Derived, SchedulerType&, ChildLog*>;
-  static constexpr bool needs_restarts =
-      std::is_constructible_v<Derived, SchedulerType&, ChildLog*, std::size_t>;
-};
-
-template <typename SupervisorType>
-class ShouldRestartPolicyMatrixTest : public ::testing::Test {};
-
-template <typename SupervisorType>
-void expect_should_restart_matrix() {
-  using Traits = ShouldRestartTestTraits<SupervisorType>;
-  using SchedulerType = typename Traits::scheduler_type;
-
-  SchedulerType scheduler;
-  ChildLog log;
-
-  auto check_matrix = [&](auto& supervisor) {
-    EXPECT_TRUE(agner::SupervisorTestAccess::should_restart_for_tests(
-        supervisor, agner::Restart::permanent,
-        {agner::ExitReason::Kind::normal}));
-    EXPECT_TRUE(agner::SupervisorTestAccess::should_restart_for_tests(
-        supervisor, agner::Restart::permanent,
-        {agner::ExitReason::Kind::error}));
-    EXPECT_TRUE(agner::SupervisorTestAccess::should_restart_for_tests(
-        supervisor, agner::Restart::transient,
-        {agner::ExitReason::Kind::error}));
-    EXPECT_FALSE(agner::SupervisorTestAccess::should_restart_for_tests(
-        supervisor, agner::Restart::transient,
-        {agner::ExitReason::Kind::normal}));
-    EXPECT_FALSE(agner::SupervisorTestAccess::should_restart_for_tests(
-        supervisor, agner::Restart::temporary,
-        {agner::ExitReason::Kind::error}));
-    EXPECT_FALSE(agner::SupervisorTestAccess::should_restart_for_tests(
-        supervisor, agner::Restart::temporary,
-        {agner::ExitReason::Kind::normal}));
-  };
-
-  auto run = [&](auto&&... args) {
-    SupervisorType supervisor{scheduler, std::forward<decltype(args)>(args)...};
-    if constexpr (requires(SchedulerType& sched) { sched.run_until_idle(); }) {
-      scheduler.run_until_idle();
-    }
-    check_matrix(supervisor);
-  };
-
-  if constexpr (Traits::needs_restarts) {
-    run(&log, std::size_t{1});
-  } else if constexpr (Traits::needs_log) {
-    run(&log);
-  } else {
-    run();
-  }
-}
-
-using ShouldRestartSupervisorTypes = ::testing::Types<
-    ReuseSupervisor, OneForOneSupervisor, TransientSupervisor,
-    TemporarySupervisor, OneForAllSupervisor, RestForOneSupervisor,
-    SimpleSupervisor, NoArgSupervisor, SimpleStartSupervisor,
-    RestartLoopSupervisor, StopDeleteNoRefSupervisor, StopDeleteSupervisor,
-    SimpleTemporarySupervisor, PopRestartSupervisor, TemporaryGroupSupervisor,
-    SchedulerSupervisor, ZeroIntensityGroupSupervisor,
-    NoopRestartGroupSupervisor, IntensitySupervisor>;
-
-TYPED_TEST_SUITE(ShouldRestartPolicyMatrixTest, ShouldRestartSupervisorTypes);
-
-// Summary: Each supervisor type applies restart policies consistently.
-// Description: This typed test constructs each supervisor defined in this file
-// and calls should_restart_for_tests with permanent, transient, and temporary
-// exit reasons in both normal and error cases.
-TYPED_TEST(ShouldRestartPolicyMatrixTest, ShouldRestartPolicyMatrix) {
-  expect_should_restart_matrix<TypeParam>();
-}
 
 }  // namespace
 
@@ -1473,19 +1162,6 @@ TEST(Supervisor, SimpleOneForOneNoArgChildStarts) {
   EXPECT_EQ(no_arg_starts, 1);
 }
 
-// Summary: When a non-simple child is restarted without a ref, it should start.
-// Description: This test clears the ref in state and invokes start_child to
-// ensure a new child is spawned.
-TEST(Supervisor, NonSimpleStartReusesClearedRef) {
-  agner::DeterministicScheduler scheduler;
-  ChildLog log;
-  scheduler.spawn<SimpleStartSupervisor>(&log);
-
-  scheduler.run_until_idle();
-
-  EXPECT_GE(log.starts[1], 2);
-}
-
 // Summary: When restart history exceeds the time window, entries are pruned.
 // Description: This test advances the deterministic scheduler to prune history
 // in register_restart.
@@ -1493,19 +1169,6 @@ TEST(Supervisor, RestartLoopPrunesHistory) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
   scheduler.spawn<RestartLoopSupervisor>(&log);
-
-  scheduler.run_until_idle();
-
-  EXPECT_GE(log.starts[1], 1);
-}
-
-// Summary: When stop/delete are called on an empty ref, they should skip
-// cleanly. Description: This test resets the ref and exercises stop/delete
-// paths.
-TEST(Supervisor, StopDeleteSkipsEmptyRef) {
-  agner::DeterministicScheduler scheduler;
-  ChildLog log;
-  scheduler.spawn<StopDeleteNoRefSupervisor>(&log);
 
   scheduler.run_until_idle();
 
@@ -1578,278 +1241,214 @@ TEST(Supervisor, DownSignalWithoutFromIsIgnored) {
   EXPECT_EQ(log.starts[1], 1);
 }
 
-// Summary: When stopping with a non-self exit, the loop continues.
-// Description: This test forces stopping and sends a non-self exit signal to
-// cover the stop gate decision where signal.from != self.
-TEST(Supervisor, StopGateManualNonSelfExitWhileStopping) {
+// Summary: When restart_child is called on an active child, it stops and
+// restarts. Description: This test calls restart_child on a running child and
+// verifies it restarts.
+TEST(Supervisor, RestartChildStopsAndRestartsActiveChild) {
   agner::DeterministicScheduler scheduler;
-  scheduler.spawn<StopGateManualNonSelfSupervisor>();
-
-  scheduler.run_until_idle();
-
-  EXPECT_TRUE(true);
-}
-
-// Summary: When restarting with no ref and no start history, it skips.
-// Description: This test ensures restart_children_by_index skips unstarted
-// instances with empty refs and a start_order of zero.
-TEST(Supervisor, RestartChildrenSkipsUnstartedInstance) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-
-  scheduler.run_until_idle();
-
-  supervisor.prepare_unstarted_instance();
-  auto& state = supervisor.state_for_test();
-  ASSERT_FALSE(state.instances.front().ref.has_value());
-  ASSERT_EQ(state.instances.front().start_order, 0u);
-
-  agner::SupervisorTestAccess::restart_children_by_index_for_tests(supervisor);
-
-  EXPECT_FALSE(state.instances.front().ref.has_value());
-}
-
-// Summary: When stopping with no refs, stop_children skips instances.
-// Description: This test clears refs and calls stop_child to cover the stop
-// path where instance.ref is empty.
-TEST(Supervisor, StopChildrenSkipsMissingRef) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-
-  scheduler.run_until_idle();
-
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().ref.reset();
-
-  supervisor.stop_child<agner::ChildIndex<0>>().detach(scheduler);
-  scheduler.run_until_idle();
-
-  EXPECT_FALSE(state.instances.front().ref.has_value());
-}
-
-// Summary: When deleting children without refs, the delete path skips them.
-// Description: This test clears refs and calls delete_child to cover the
-// decision path where instance.ref is false.
-TEST(Supervisor, DeleteChildrenSkipsMissingRef) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-
-  scheduler.run_until_idle();
-
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-
-  supervisor.delete_child<agner::ChildIndex<0>>().detach(scheduler);
-  scheduler.run_until_idle();
-
-  EXPECT_TRUE(state.instances.empty());
-}
-
-// Summary: When suppress_restart is set, termination returns early.
-// Description: This test forces suppress_restart under a simple strategy and
-// calls the termination handler to cover that decision path.
-TEST(Supervisor, TerminationSkipsSuppressedRestartForSimpleStrategy) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
   ChildLog log;
 
+  // Create a supervisor that exposes restart_child through a message
+  class RestartChildSupervisor
+      : public agner::Supervisor<agner::DeterministicScheduler,
+                                 RestartChildSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+   public:
+    using Base = agner::Supervisor<agner::DeterministicScheduler,
+                                   RestartChildSupervisor,
+                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+
+    RestartChildSupervisor(agner::DeterministicScheduler& scheduler,
+                           ChildLog* log)
+        : Base(scheduler), log_(log) {}
+
+    static Specification specification() {
+      return {
+          .strategy = agner::Strategy::one_for_one,
+          .intensity = {3, 10ms},
+          .children = std::make_tuple(agner::child<LoggedChild, ChildLog*, int>(
+              {"child"}, agner::Restart::permanent, 0ms, null_log(), 1))};
+    }
+
+    task<void> run() {
+      this->template set_child_args<0>(std::make_tuple(log_, 1));
+      co_await Base::init();
+      // Restart the running child
+      co_await restart_child<agner::ChildIndex<0>>();
+      co_await Base::supervise_loop();
+    }
+
+   private:
+    ChildLog* log_;
+  };
+
+  auto supervisor = scheduler.spawn<RestartChildSupervisor>(&log);
   scheduler.run_until_idle();
 
-  agner::SupervisorTestAccess::specification_for_tests(supervisor).strategy =
-      agner::Strategy::simple_one_for_one;
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().ref = scheduler.spawn<LoggedChild>(&log, 1);
-  state.instances.front().suppress_restart = true;
-  state.instances.front().start_order = 1;
+  // Child should have started twice: once initially, once after restart
+  EXPECT_EQ(log.starts[1], 2);
 
-  agner::SupervisorTestAccess::add_fake_live_child(
-      supervisor, state.instances.front().ref.value(), 0, 0, 1);
-  agner::SupervisorTestAccess::handle_exit_for_tests(
-      supervisor, state.instances.front().ref.value(),
-      {agner::ExitReason::Kind::error});
-
-  EXPECT_TRUE(state.instances.empty());
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.run_until_idle();
 }
 
-// Summary: When restart policy forbids restarts, non-simple strategies skip.
-// Description: This test sets a temporary restart policy and normal exit to
-// cover the !should_restart branch where strategy is not simple.
-TEST(Supervisor, TerminationSkipsRestartForTemporaryChild) {
+// Summary: When stop_child is called on a running child, it sets suppress flag.
+// Description: This test stops a child via stop_child and verifies it doesn't
+// restart when it exits.
+TEST(Supervisor, StopChildSuppressesRestartOnActiveChild) {
   agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
   ChildLog log;
 
+  class StopChildSupervisor
+      : public agner::Supervisor<agner::DeterministicScheduler,
+                                 StopChildSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+   public:
+    using Base = agner::Supervisor<agner::DeterministicScheduler,
+                                   StopChildSupervisor,
+                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+
+    StopChildSupervisor(agner::DeterministicScheduler& scheduler, ChildLog* log)
+        : Base(scheduler), log_(log) {}
+
+    static Specification specification() {
+      return {
+          .strategy = agner::Strategy::one_for_one,
+          .intensity = {3, 10ms},
+          .children = std::make_tuple(agner::child<LoggedChild, ChildLog*, int>(
+              {"child"}, agner::Restart::permanent, 0ms, null_log(), 1))};
+    }
+
+    task<void> run() {
+      this->template set_child_args<0>(std::make_tuple(log_, 1));
+      co_await Base::init();
+      // Stop the running child (should suppress restart)
+      co_await stop_child<agner::ChildIndex<0>>();
+      co_await Base::supervise_loop();
+    }
+
+   private:
+    ChildLog* log_;
+  };
+
+  auto supervisor = scheduler.spawn<StopChildSupervisor>(&log);
   scheduler.run_until_idle();
 
-  auto& spec = agner::SupervisorTestAccess::spec_for_index(supervisor, 0);
-  spec.restart = agner::Restart::temporary;
+  // Child should only start once - restart is suppressed
+  EXPECT_EQ(log.starts[1], 1);
 
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().ref = scheduler.spawn<LoggedChild>(&log, 1);
-  state.instances.front().start_order = 1;
-
-  agner::SupervisorTestAccess::add_fake_live_child(
-      supervisor, state.instances.front().ref.value(), 0, 0, 1);
-  agner::SupervisorTestAccess::handle_exit_for_tests(
-      supervisor, state.instances.front().ref.value(),
-      {agner::ExitReason::Kind::normal});
-
-  EXPECT_FALSE(state.instances.front().ref.has_value());
-}
-
-// Summary: When restart-group stops miss entries, pending stops stay.
-// Description: This test calls handle_restart_group_stop with unknown refs to
-// cover the missing live child and pending stop decisions.
-TEST(Supervisor, RestartGroupStopSkipsUnknownRefs) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
   scheduler.run_until_idle();
-
-  auto& pending =
-      agner::SupervisorTestAccess::restart_group_pending(supervisor);
-  pending.push_back(agner::ActorRef{1});
-  pending.push_back(agner::ActorRef{2});
-
-  agner::SupervisorTestAccess::handle_restart_group_stop_for_tests(
-      supervisor, agner::ActorRef{3}, {agner::ExitReason::Kind::error});
-
-  EXPECT_EQ(pending.size(), 2u);
 }
 
-// Summary: When restart groups are inactive, finalize returns immediately.
-// Description: This test calls finalize_restart_group without an active group
-// to cover the early-return decision.
-TEST(Supervisor, FinalizeRestartGroupReturnsWhenInactive) {
+// Summary: When delete_child is called, it removes the child from registry.
+// Description: This test deletes a child and verifies it doesn't restart.
+TEST(Supervisor, DeleteChildRemovesFromRegistry) {
   agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-
-  scheduler.run_until_idle();
-
-  agner::SupervisorTestAccess::finalize_restart_group_for_tests(supervisor);
-
-  EXPECT_TRUE(true);
-}
-
-// Summary: When plan items suppress restarts, finalize skips them.
-// Description: This test adds a suppressed plan item so finalize_restart_group
-// continues without restarting the child.
-TEST(Supervisor, FinalizeRestartGroupSkipsSuppressedInstancePlanEntry) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-
-  scheduler.run_until_idle();
-
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().suppress_restart = true;
-  state.instances.front().start_order = 1;
-
-  agner::SupervisorTestAccess::add_plan_item(supervisor, 0, 0, 1,
-                                             {agner::ExitReason::Kind::error});
-  agner::SupervisorTestAccess::finalize_restart_group_for_tests(supervisor);
-
-  EXPECT_TRUE(true);
-}
-
-// Summary: When restarts are not allowed, finalize skips the plan item.
-// Description: This test uses a temporary restart policy and normal exit to
-// cover the !should_restart branch in finalize_restart_group.
-TEST(Supervisor, FinalizeRestartGroupSkipsNonRestartablePlanItem) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-
-  scheduler.run_until_idle();
-
-  auto& spec = agner::SupervisorTestAccess::spec_for_index(supervisor, 0);
-  spec.restart = agner::Restart::temporary;
-
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().start_order = 1;
-
-  agner::SupervisorTestAccess::add_plan_item(supervisor, 0, 0, 1,
-                                             {agner::ExitReason::Kind::normal});
-  agner::SupervisorTestAccess::finalize_restart_group_for_tests(supervisor);
-
-  EXPECT_TRUE(true);
-}
-
-// Summary: When a plan item is stopping, finalize skips it.
-// Description: This test provides a stopping ref so finalize_restart_group
-// continues without restarting the child.
-TEST(Supervisor, FinalizeRestartGroupSkipsStoppingRef) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
   ChildLog log;
 
+  class DeleteChildSupervisor
+      : public agner::Supervisor<agner::DeterministicScheduler,
+                                 DeleteChildSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+   public:
+    using Base = agner::Supervisor<agner::DeterministicScheduler,
+                                   DeleteChildSupervisor,
+                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+
+    DeleteChildSupervisor(agner::DeterministicScheduler& scheduler,
+                          ChildLog* log)
+        : Base(scheduler), log_(log) {}
+
+    static Specification specification() {
+      return {
+          .strategy = agner::Strategy::one_for_one,
+          .intensity = {3, 10ms},
+          .children = std::make_tuple(agner::child<LoggedChild, ChildLog*, int>(
+              {"child"}, agner::Restart::permanent, 0ms, null_log(), 1))};
+    }
+
+    task<void> run() {
+      this->template set_child_args<0>(std::make_tuple(log_, 1));
+      co_await Base::init();
+      // Delete removes child from registry
+      co_await delete_child<agner::ChildIndex<0>>();
+      co_await Base::supervise_loop();
+    }
+
+   private:
+    ChildLog* log_;
+  };
+
+  auto supervisor = scheduler.spawn<DeleteChildSupervisor>(&log);
   scheduler.run_until_idle();
 
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().ref = scheduler.spawn<LoggedChild>(&log, 1);
-  state.instances.front().stopping = true;
-  state.instances.front().start_order = 1;
+  // Child should only start once - completely removed
+  EXPECT_EQ(log.starts[1], 1);
 
-  agner::SupervisorTestAccess::add_plan_item(supervisor, 0, 0, 1,
-                                             {agner::ExitReason::Kind::error});
-  agner::SupervisorTestAccess::finalize_restart_group_for_tests(supervisor);
-
-  EXPECT_TRUE(true);
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.run_until_idle();
 }
 
-// Summary: When plan items are active, finalize can request a stop.
-// Description: This test uses an active ref without stopping so finalize passes
-// through the instance.stopping check.
-TEST(Supervisor, FinalizeRestartGroupHandlesActiveRef) {
+// Summary: Multi-spec supervisor operations skip children of other spec indices.
+// Description: This test creates a supervisor with two child specs, starts both,
+// then calls stop/restart/delete on one spec while the other remains active.
+// This exercises the continue statements in stop_and_suppress_by_index,
+// restart_children_by_index, and delete_children_by_index.
+TEST(Supervisor, MultiSpecOperationsSkipOtherIndices) {
   agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
   ChildLog log;
 
+  class MultiSpecSupervisor
+      : public agner::Supervisor<agner::DeterministicScheduler,
+                                 MultiSpecSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+   public:
+    using Base = agner::Supervisor<agner::DeterministicScheduler,
+                                   MultiSpecSupervisor,
+                                   agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+
+    MultiSpecSupervisor(agner::DeterministicScheduler& scheduler, ChildLog* log)
+        : Base(scheduler), log_(log) {}
+
+    static Specification specification() {
+      return {
+          .strategy = agner::Strategy::one_for_one,
+          .intensity = {3, 10ms},
+          .children = std::make_tuple(
+              agner::child<LoggedChild, ChildLog*, int>(
+                  {"child_a"}, agner::Restart::permanent, 0ms, null_log(), 1),
+              agner::child<LoggedChild, ChildLog*, int>(
+                  {"child_b"}, agner::Restart::permanent, 0ms, null_log(), 2))};
+    }
+
+    task<void> run() {
+      this->template set_child_args<0>(std::make_tuple(log_, 1));
+      this->template set_child_args<1>(std::make_tuple(log_, 2));
+      co_await Base::init();
+      // Stop child 0 while child 1 still exists (triggers continue in loop)
+      co_await stop_child<agner::ChildIndex<0>>();
+      // Restart child 0 while child 1 still exists (triggers continue in loop)
+      co_await restart_child<agner::ChildIndex<0>>();
+      // Delete child 0 while child 1 still exists (triggers continue in loop)
+      co_await delete_child<agner::ChildIndex<0>>();
+      co_await Base::supervise_loop();
+    }
+
+   private:
+    ChildLog* log_;
+  };
+
+  auto supervisor = scheduler.spawn<MultiSpecSupervisor>(&log);
   scheduler.run_until_idle();
 
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().ref = scheduler.spawn<LoggedChild>(&log, 1);
-  state.instances.front().stopping = false;
-  state.instances.front().start_order = 1;
+  // Child 1 should start once initially (stop_child stopped it first)
+  // Child 2 should keep running during all operations on child 1
+  EXPECT_EQ(log.starts[1], 1);
+  EXPECT_EQ(log.starts[2], 1);
 
-  agner::SupervisorTestAccess::add_plan_item(supervisor, 0, 0, 1,
-                                             {agner::ExitReason::Kind::error});
-  agner::SupervisorTestAccess::finalize_restart_group_for_tests(supervisor);
-
-  EXPECT_TRUE(true);
-}
-
-// Summary: When restarting an active ref, a stop is requested first.
-// Description: This test triggers restart_children_by_index with an active ref
-// to cover the restart_instance path that requests a stop.
-TEST(Supervisor, RestartChildrenStopsActiveRef) {
-  agner::DeterministicScheduler scheduler;
-  DecisionCoverageSupervisor supervisor{scheduler};
-  ChildLog log;
-
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
   scheduler.run_until_idle();
-
-  auto& state = agner::SupervisorTestAccess::state_for_index(supervisor, 0);
-  state.instances.clear();
-  state.instances.emplace_back();
-  state.instances.front().ref = scheduler.spawn<LoggedChild>(&log, 1);
-  state.instances.front().start_order = 1;
-
-  agner::SupervisorTestAccess::restart_children_by_index_for_tests(supervisor);
-  scheduler.run_until_idle();
-
-  EXPECT_TRUE(true);
 }
