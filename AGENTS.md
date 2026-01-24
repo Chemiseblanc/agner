@@ -38,7 +38,7 @@
 - Coverage preset uses Clang and MCDC instrumentation.
 - Run coverage helper script (preferred workflow):
   - `scripts/coverage.sh`
-- Maintain 100% line, branch, and MCDC coverage for changes.
+- Maintain 100% line, and decision coverage for changes.
 - Coverage output directory:
   - `artifacts/default/coverage`
 
