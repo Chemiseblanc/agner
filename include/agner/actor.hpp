@@ -10,6 +10,7 @@
 
 #include <cassert>
 #include <chrono>
+#include <algorithm>
 #include <deque>
 #include <functional>
 #include <optional>
@@ -252,18 +253,20 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
 
   template <typename Storage, typename Tuple>
   bool try_match_mailbox(Storage& storage, Tuple& visitors) {
-    for (auto it = mailbox_.begin(); it != mailbox_.end(); ++it) {
-      bool matched = std::apply(
-          [&](auto&... visitor) {
-            return detail::try_match_visitors(*it, storage, visitor...);
-          },
-          visitors);
-      if (matched) {
-        mailbox_.erase(it);
-        return true;
-      }
+    auto it = std::find_if(mailbox_.begin(), mailbox_.end(),
+                           [&](auto& queued_message) {
+                             return std::apply(
+                                 [&](auto&... visitor) {
+                                   return detail::try_match_visitors(
+                                       queued_message, storage, visitor...);
+                                 },
+                                 visitors);
+                           });
+    if (it == mailbox_.end()) {
+      return false;
     }
-    return false;
+    mailbox_.erase(it);
+    return true;
   }
 
   void notify_waiter() {

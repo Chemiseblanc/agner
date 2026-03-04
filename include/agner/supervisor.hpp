@@ -8,7 +8,9 @@
  * policies (one-for-one, one-for-all, rest-for-one, simple-one-for-one).
  */
 
+#include <algorithm>
 #include <any>
+#include <cassert>
 #include <chrono>
 #include <cstddef>
 #include <deque>
@@ -22,9 +24,8 @@
 
 #include "agner/actor.hpp"
 #include "agner/actor_control.hpp"
-#include "agner/errors.hpp"
-#include "agner/scheduler_concept.hpp"
 #include "agner/detail/supervisor_detail.hpp"
+#include "agner/scheduler_concept.hpp"
 
 namespace agner {
 
@@ -37,10 +38,11 @@ enum class Restart {
 
 /// @brief Supervisor restart strategy.
 enum class Strategy {
-  one_for_one,       ///< Restart only the failed child.
-  one_for_all,       ///< Restart all children when one fails.
-  rest_for_one,      ///< Restart the failed child and those started after it.
-  simple_one_for_one ///< Dynamic children with identical specs. ///< Dynamic children with identical specs.
+  one_for_one,        ///< Restart only the failed child.
+  one_for_all,        ///< Restart all children when one fails.
+  rest_for_one,       ///< Restart the failed child and those started after it.
+  simple_one_for_one  ///< Dynamic children with identical specs. ///< Dynamic
+                      ///< children with identical specs.
 };
 
 /// @brief Restart intensity limit configuration.
@@ -62,11 +64,12 @@ struct ChildSpec {
   using actor_type = ActorType;
   using args_type = std::tuple<std::decay_t<Args>...>;
 
-  ChildId id;                                     ///< Child identifier.
-  Restart restart = Restart::permanent;           ///< Restart policy.
-  std::chrono::steady_clock::duration shutdown{}; ///< Shutdown timeout.
-  args_type args{};                               ///< Constructor arguments.
-  bool simple = false;                            ///< True for simple_one_for_one.                            ///< True for simple_one_for_one.
+  ChildId id;                                      ///< Child identifier.
+  Restart restart = Restart::permanent;            ///< Restart policy.
+  std::chrono::steady_clock::duration shutdown{};  ///< Shutdown timeout.
+  args_type args{};                                ///< Constructor arguments.
+  bool simple = false;  ///< True for simple_one_for_one. ///< True for
+                        ///< simple_one_for_one.
 };
 
 /// @brief Create a child specification with constructor arguments.
@@ -117,8 +120,8 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   /// @brief Supervisor configuration.
   struct Specification {
     Strategy strategy = Strategy::one_for_one;  ///< Restart strategy.
-    Intensity intensity{};                       ///< Restart intensity limit.
-    std::tuple<ChildSpecs...> children{};        ///< Child specifications.
+    Intensity intensity{};                      ///< Restart intensity limit.
+    std::tuple<ChildSpecs...> children{};       ///< Child specifications.
   };
 
   /// @brief Construct a supervisor bound to a scheduler.
@@ -129,9 +132,12 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
 
   /// @brief Initialize the supervisor and start static children.
   task<void> init() {
-    if (specification_.strategy != Strategy::simple_one_for_one) {
-      co_await start_all_from_specs();
+    const bool should_start_static_children =
+        specification_.strategy != Strategy::simple_one_for_one;
+    if (!should_start_static_children) {
+      co_return;
     }
+    co_await start_all_from_specs();
     co_return;
   }
 
@@ -143,7 +149,12 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   task<ActorRef> start_child(Args&&... args) {
     constexpr std::size_t index =
         detail::resolve_selector_index<Selector, ChildSpecs...>();
-    co_return co_await start_child_by_index<index>(std::forward<Args>(args)...);
+    if constexpr (sizeof...(Args) == 0) {
+      co_return co_await start_child_by_index<index>();
+    } else {
+      co_return co_await start_child_by_index<index>(
+          std::forward<Args>(args)...);
+    }
   }
 
   /// @brief Stop a running child actor.
@@ -210,7 +221,11 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   /// @brief Stop the supervisor and all children.
   /// @param reason Exit reason to propagate.
   void stop(ExitReason reason = {}) override {
-    stopping_ = true;
+    if (!stopping_) {
+      stopping_ = true;
+      stop_all_children();
+      restart_group_.reset();
+    }
     Base::stop(reason);
   }
 
@@ -219,7 +234,9 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
     while (true) {
       bool stop_requested = false;
       co_await this->receive(
-          [&](DownSignal& signal) { handle_signal(signal.from, signal.reason); },
+          [&](DownSignal& signal) {
+            handle_signal(signal.from, signal.reason);
+          },
           [&](ExitSignal& signal) {
             if (stopping_ && signal.from == this->self()) {
               stop_requested = true;
@@ -258,32 +275,25 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
 
   template <typename Spec>
   struct SpecState {
-    using ActorType = typename Spec::actor_type;
-    using ArgsTuple = typename Spec::args_type;
-
     Spec spec;
 
     std::optional<ActorRef> find_child_ref(
-        ChildId id,
-        const std::map<ActorRef, ChildEntry>& children) const {
+        ChildId id, const std::map<ActorRef, ChildEntry>& children) const {
       if (spec.id.value != id.value) {
         return std::nullopt;
       }
       for (const auto& [ref, entry] : children) {
-        if (entry.spec_index == get_spec_index()) {
+        if (entry.spec_index == spec_index) {
           return ref;
         }
       }
       return std::nullopt;
     }
 
-    // Returns spec index - set during initialization
     std::size_t spec_index = 0;
-    std::size_t get_spec_index() const { return spec_index; }
   };
 
   using StatesTuple = std::tuple<SpecState<ChildSpecs>...>;
-  using SpecsTuple = std::tuple<ChildSpecs...>;
 
   template <std::size_t... Is>
   void initialize_states_impl(std::index_sequence<Is...>) {
@@ -303,23 +313,18 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   task<ActorRef> start_child_by_index() {
     auto& state = std::get<Index>(states_);
     if (specification_.strategy == Strategy::simple_one_for_one) {
-      co_return co_await start_child_by_index<Index>(
-          typename decltype(state.spec)::args_type{});
+      using ArgsTuple = typename decltype(state.spec)::args_type;
+      auto args = ArgsTuple{};
+      co_return start_child_with_args<Index>(std::move(args));
     }
-    co_return co_await start_child_by_index<Index>(state.spec.args);
-  }
-
-  template <std::size_t Index>
-  task<ActorRef> start_child_by_index(
-      typename std::tuple_element<
-          Index, std::tuple<ChildSpecs...>>::type::args_type args) {
-    co_return start_child_with_args<Index>(std::move(args));
+    co_return start_child_with_args<Index>(state.spec.args);
   }
 
   template <std::size_t Index, typename... Args>
   task<ActorRef> start_child_by_index(Args&&... args) {
-    using ArgsTuple = typename std::tuple_element<
-        Index, std::tuple<ChildSpecs...>>::type::args_type;
+    using ArgsTuple =
+        typename std::tuple_element<Index,
+                                    std::tuple<ChildSpecs...>>::type::args_type;
     auto args_tuple = ArgsTuple{std::forward<Args>(args)...};
     co_return start_child_with_args<Index>(std::move(args_tuple));
   }
@@ -333,10 +338,9 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
 
     // For non-simple strategies, check if child already exists for this spec
     if (!is_simple) {
-      for (const auto& [ref, entry] : children_) {
-        if (entry.spec_index == Index) {
-          return ref;
-        }
+      auto existing_ref = find_running_child_for_spec<Index>();
+      if (existing_ref) {
+        return *existing_ref;
       }
     }
 
@@ -356,6 +360,18 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   }
 
   template <std::size_t Index>
+  std::optional<ActorRef> find_running_child_for_spec() const {
+    auto it = std::find_if(children_.begin(), children_.end(),
+                           [&](const auto& child) {
+                             return child.second.spec_index == Index;
+                           });
+    if (it == children_.end()) {
+      return std::nullopt;
+    }
+    return it->first;
+  }
+
+  template <std::size_t Index>
   ActorRef spawn_child_with_args(
       typename std::tuple_element<
           Index, std::tuple<ChildSpecs...>>::type::args_type& args) {
@@ -372,13 +388,21 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
 
   template <std::size_t Index>
   void stop_and_suppress_by_index() {
-    for (auto& [ref, entry] : children_) {
-      if (entry.spec_index != Index) {
-        continue;
+    std::for_each(children_.begin(), children_.end(), [&](auto& child) {
+      auto& [ref, entry] = child;
+      if (entry.spec_index == Index) {
+        entry.suppress_restart = true;
+        request_stop(ref);
       }
+    });
+  }
+
+  void stop_all_children() {
+    std::for_each(children_.begin(), children_.end(), [&](auto& child) {
+      auto& [ref, entry] = child;
       entry.suppress_restart = true;
       request_stop(ref);
-    }
+    });
   }
 
   template <std::size_t Index>
@@ -390,30 +414,24 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   void restart_children_by_index() {
     // Collect refs to restart (can't modify map while iterating)
     std::vector<ActorRef> to_restart;
-    for (auto& [ref, entry] : children_) {
-      if (entry.spec_index != Index) {
-        continue;
+    std::for_each(children_.begin(), children_.end(), [&](auto& child) {
+      auto& [ref, entry] = child;
+      if (entry.spec_index == Index) {
+        entry.suppress_restart = false;
+        to_restart.push_back(ref);
       }
-      entry.suppress_restart = false;
-      to_restart.push_back(ref);
-    }
-    for (auto ref : to_restart) {
+    });
+    std::for_each(to_restart.begin(), to_restart.end(), [&](ActorRef ref) {
       auto& child = children_.at(ref);
       restart_child_entry<Index>(ref, child);
-    }
+    });
   }
 
   template <std::size_t Index>
   void delete_children_by_index() {
     stop_and_suppress_by_index<Index>();
-    // Remove all children for this spec
-    for (auto it = children_.begin(); it != children_.end();) {
-      if (it->second.spec_index == Index) {
-        it = children_.erase(it);
-      } else {
-        ++it;
-      }
-    }
+    std::erase_if(children_,
+                  [&](const auto& child) { return child.second.spec_index == Index; });
   }
 
   void handle_signal(ActorRef from, const ExitReason& reason) {
@@ -429,12 +447,17 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
       return;
     }
 
-    auto entry = std::move(children_.at(actor_ref));
-    children_.erase(actor_ref);
+    auto child_it = children_.find(actor_ref);
+    if (child_it == children_.end()) {
+      return;
+    }
 
-    auto& spec = spec_at(entry.spec_index);
+    auto entry = std::move(child_it->second);
+    children_.erase(child_it);
+
+    const Restart restart = restart_at_spec_index(entry.spec_index);
     const bool will_restart =
-        !entry.suppress_restart && should_restart(spec.restart, reason);
+        !entry.suppress_restart && should_restart(restart, reason);
 
     if (!will_restart) {
       return;
@@ -456,7 +479,7 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   }
 
   void handle_restart_group_stop(ActorRef actor_ref,
-                                  const ExitReason& /*reason*/) {
+                                 const ExitReason& /*reason*/) {
     // Remove from children_ if present
     auto it = children_.find(actor_ref);
     if (it != children_.end()) {
@@ -484,36 +507,37 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
     group.plan.push_back(RestartPlanItem{failed_ref, failed_entry.spec_index,
                                          failed_entry.start_order, reason});
 
-    if (group.strategy == Strategy::one_for_all) {
-      // Stop and restart all children
-      for (const auto& [ref, entry] : children_) {
-        group.plan.push_back(RestartPlanItem{
-            ref, entry.spec_index, entry.start_order,
-            ExitReason{ExitReason::Kind::stopped}});
-      }
-    } else if (group.strategy == Strategy::rest_for_one) {
-      // Stop and restart children started after the failed one
-      for (const auto& [ref, entry] : children_) {
-        if (entry.start_order > failed_entry.start_order) {
-          group.plan.push_back(RestartPlanItem{
-              ref, entry.spec_index, entry.start_order,
-              ExitReason{ExitReason::Kind::stopped}});
-        }
-      }
-    }
+    assert(group.strategy == Strategy::one_for_all ||
+           group.strategy == Strategy::rest_for_one);
+    std::for_each(children_.begin(), children_.end(), [&](const auto& child) {
+      const auto& [ref, entry] = child;
+      group.plan.push_back(
+          RestartPlanItem{ref, entry.spec_index, entry.start_order,
+                          ExitReason{ExitReason::Kind::stopped}});
+    });
+    auto plan_it = group.plan.begin();
+    ++plan_it;  // Keep failed child entry at index 0.
+    group.plan.erase(
+        std::remove_if(plan_it, group.plan.end(),
+                       [&](const auto& plan_item) {
+                         return group.strategy == Strategy::rest_for_one &&
+                                plan_item.start_order <= failed_entry.start_order;
+                       }),
+        group.plan.end());
 
     restart_group_ = std::move(group);
 
-    // Send stop signals to all children in the plan (except failed one already removed)
-    for (const auto& plan_item : restart_group_->plan) {
-      if (!children_.contains(plan_item.ref)) {
-        continue;  // Already removed (the failed child)
-      }
-      auto& child = children_.at(plan_item.ref);
-      restart_group_->pending_stops.push_back(plan_item.ref);
-      child.suppress_restart = false;
-      request_stop(plan_item.ref);
-    }
+    // Send stop signals to all children in the plan (except failed one already
+    // removed)
+    std::for_each(restart_group_->plan.begin(), restart_group_->plan.end(),
+                  [&](const auto& plan_item) {
+                    if (children_.contains(plan_item.ref)) {
+                      auto& child = children_.at(plan_item.ref);
+                      restart_group_->pending_stops.push_back(plan_item.ref);
+                      child.suppress_restart = false;
+                      request_stop(plan_item.ref);
+                    }
+                  });
 
     if (restart_group_->pending_stops.empty()) {
       finalize_restart_group();
@@ -521,21 +545,18 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   }
 
   void finalize_restart_group() {
-    if (!restart_group_) {
-      return;
-    }
+    assert(restart_group_);
 
     auto group = std::move(*restart_group_);
     restart_group_.reset();
 
-    for (const auto& plan_item : group.plan) {
-      auto& spec = spec_at(plan_item.spec_index);
-      if (!should_restart(spec.restart, plan_item.reason)) {
-        continue;
+    std::for_each(group.plan.begin(), group.plan.end(), [&](const auto& plan_item) {
+      if (should_restart(restart_at_spec_index(plan_item.spec_index),
+                         plan_item.reason)) {
+        // Respawn using spec's default args
+        respawn_at_spec_index(plan_item.spec_index);
       }
-      // Respawn using spec's default args
-      respawn_at_spec_index(plan_item.spec_index);
-    }
+    });
   }
 
   // Respawn a child using the stored args from a ChildEntry
@@ -562,8 +583,9 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   // Restart a specific child entry, stopping it first if running
   template <std::size_t Index>
   void restart_child_entry(ActorRef ref, ChildEntry& entry) {
-    using ArgsTuple = typename std::tuple_element<
-        Index, std::tuple<ChildSpecs...>>::type::args_type;
+    using ArgsTuple =
+        typename std::tuple_element<Index,
+                                    std::tuple<ChildSpecs...>>::type::args_type;
     // If child is still running, stop it first
     if (!entry.stopping) {
       entry.suppress_restart = false;
@@ -586,14 +608,13 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   }
 
   bool should_restart(Restart restart, const ExitReason& reason) const {
-    switch (restart) {
-      case Restart::permanent:
-        return true;
-      case Restart::transient:
-        return reason.kind != ExitReason::Kind::normal;
-      case Restart::temporary:
-        return false;
+    if (restart == Restart::permanent) {
+      return true;
     }
+    if (restart == Restart::transient) {
+      return reason.kind != ExitReason::Kind::normal;
+    }
+    assert(restart == Restart::temporary);
     return false;
   }
 
@@ -605,12 +626,10 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
 
     auto now = detail::scheduler_now(this->scheduler());
     auto within = specification_.intensity.within;
-    while (!restart_times_.empty()) {
-      if (now - restart_times_.front() <= within) {
-        break;
-      }
-      restart_times_.pop_front();
-    }
+    std::erase_if(restart_times_,
+                  [&](const auto& restart_time) {
+                    return now - restart_time > within;
+                  });
     restart_times_.push_back(now);
     if (restart_times_.size() > specification_.intensity.max_restarts) {
       this->stop(ExitReason{ExitReason::Kind::error});
@@ -619,41 +638,14 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
     return true;
   }
 
-  template <std::size_t Index>
-  auto& state_at() {
-    return std::get<Index>(states_);
-  }
-
-  auto state_at(std::size_t index)
-      -> decltype(std::get<0>(std::declval<StatesTuple&>()))& {
-    using ElementType = std::remove_reference_t<
-        decltype(std::get<0>(std::declval<StatesTuple&>()))>;
-    ElementType* result = nullptr;
-    bool found = detail::visit_at_index<sizeof...(ChildSpecs)>(
-        index, [&]<std::size_t Index>() { result = &std::get<Index>(states_); });
-    if (!found) {
-      throw SupervisorInvariantError("Supervisor invalid state index");
-    }
-    return *result;
-  }
-
-  template <std::size_t Index>
-  auto& spec_at() {
-    return std::get<Index>(specification_.children);
-  }
-
-  auto spec_at(std::size_t index)
-      -> decltype(std::get<0>(std::declval<SpecsTuple&>()))& {
-    using ElementType = std::remove_reference_t<
-        decltype(std::get<0>(std::declval<SpecsTuple&>()))>;
-    ElementType* result = nullptr;
-    bool found = detail::visit_at_index<sizeof...(ChildSpecs)>(
-        index,
-        [&]<std::size_t Index>() { result = &std::get<Index>(specification_.children); });
-    if (!found) {
-      throw SupervisorInvariantError("Supervisor invalid spec index");
-    }
-    return *result;
+  Restart restart_at_spec_index(std::size_t index) const {
+    Restart restart = Restart::permanent;
+    const bool found = detail::visit_at_index<sizeof...(ChildSpecs)>(
+        index, [&]<std::size_t Index>() {
+          restart = std::get<Index>(states_).spec.restart;
+        });
+    assert(found);
+    return restart;
   }
 
   template <std::size_t Index = 0>

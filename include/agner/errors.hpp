@@ -4,12 +4,10 @@
 
 namespace agner {
 
-/// @brief Exception thrown when a supervisor encounters an internal invariant violation.
-class SupervisorInvariantError : public std::logic_error {
+/// @brief Exception thrown when a GenServer call times out waiting for a reply.
+class CallTimeout : public std::runtime_error {
  public:
-  /// @brief Construct with an error message.
-  explicit SupervisorInvariantError(const char* message)
-      : std::logic_error(message) {}
+  CallTimeout() : std::runtime_error("GenServer call timed out") {}
 };
 
 }  // namespace agner

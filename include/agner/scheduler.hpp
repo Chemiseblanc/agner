@@ -42,7 +42,10 @@ class Scheduler : public SchedulerBase<Scheduler> {
 
   /// @brief Run the event loop until all work is complete.
   void run() {
-    while (!ready_.empty() || !timers_.empty()) {
+    for (;;) {
+      if (ready_.empty() && timers_.empty()) {
+        break;
+      }
       if (!ready_.empty()) {
         auto handle = ready_.front();
         ready_.pop_front();

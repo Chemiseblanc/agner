@@ -1,3 +1,5 @@
+#include "agner/supervisor.hpp"
+
 #include <gtest/gtest.h>
 
 #include <map>
@@ -5,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "agner/supervisor.hpp"
 #include "test_support.hpp"
 
 namespace {
@@ -443,6 +444,30 @@ class NoArgSupervisor
   }
 };
 
+class SimpleInitBranchSupervisor
+    : public agner::Supervisor<agner::DeterministicScheduler,
+                               SimpleInitBranchSupervisor,
+                               agner::ChildSpec<NoArgChild>> {
+ public:
+  using Base = agner::Supervisor<agner::DeterministicScheduler,
+                                 SimpleInitBranchSupervisor,
+                                 agner::ChildSpec<NoArgChild>>;
+
+  using Base::Base;
+
+  static Specification specification() {
+    return {.strategy = agner::Strategy::simple_one_for_one,
+            .intensity = {3, 10ms},
+            .children = std::make_tuple(agner::simple_child<NoArgChild>(
+                {"child"}, agner::Restart::permanent, 0ms))};
+  }
+
+  task<void> run() {
+    this->stop();
+    co_await Base::run();
+  }
+};
+
 class RestartLoopSupervisor
     : public agner::Supervisor<agner::DeterministicScheduler,
                                RestartLoopSupervisor,
@@ -755,6 +780,10 @@ class IntensitySupervisor
 // Description: This test spawns a supervisor with one permanent child, then
 // stops the child with an error reason. The child is expected to restart once,
 // which is verified by the child start count.
+// EARS: When one for one restarts child occurs, the supervisor component shall
+// exhibit the expected behavior. Test method: This test drives the one for one
+// restarts child scenario and asserts the observable outputs/state transitions.
+// Justification: those assertions directly verify the requirement outcome.
 TEST(Supervisor, OneForOneRestartsChild) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -773,6 +802,11 @@ TEST(Supervisor, OneForOneRestartsChild) {
 // Description: This test uses a transient child that exits immediately with a
 // normal reason. The supervisor should not restart it, so the start count
 // remains one.
+// EARS: When transient does not restart on normal exit occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the transient does not restart on normal exit scenario and asserts the
+// observable outputs/state transitions. Justification: those assertions
+// directly verify the requirement outcome.
 TEST(Supervisor, TransientDoesNotRestartOnNormalExit) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -786,6 +820,11 @@ TEST(Supervisor, TransientDoesNotRestartOnNormalExit) {
 // Summary: When a temporary child exits with error, it shall not restart.
 // Description: This test stops a temporary child with an error reason. The
 // supervisor should not restart it, which is verified by the start count.
+// EARS: When temporary does not restart on error occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the temporary does not restart on error scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, TemporaryDoesNotRestartOnError) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -803,6 +842,11 @@ TEST(Supervisor, TemporaryDoesNotRestartOnError) {
 // Summary: When one-for-all is used, all children restart after a failure.
 // Description: This test stops the first child with an error. Both children are
 // expected to restart, so the start counts for each child increment.
+// EARS: When one for all restarts all children occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the one
+// for all restarts all children scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, OneForAllRestartsAllChildren) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -823,6 +867,11 @@ TEST(Supervisor, OneForAllRestartsAllChildren) {
 // Description: This test stops the second child and verifies only that child
 // restarts. It then stops the first child and verifies both restart because the
 // second was started after the first.
+// EARS: When rest for one restarts later children occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the rest for one restarts later children scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, RestForOneRestartsLaterChildren) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -848,6 +897,11 @@ TEST(Supervisor, RestForOneRestartsLaterChildren) {
 // Summary: When simple-one-for-one fails a child, only that instance restarts.
 // Description: This test starts two children and stops the first. The first
 // child restarts while the second remains at a single start.
+// EARS: When simple one for one restarts instance occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the simple one for one restarts instance scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, SimpleOneForOneRestartsInstance) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -867,6 +921,11 @@ TEST(Supervisor, SimpleOneForOneRestartsInstance) {
 // Summary: When restart intensity is exceeded, the supervisor stops with error.
 // Description: This test allows only one restart and then forces two failures.
 // The observer should receive a down signal with error once the limit is hit.
+// EARS: When intensity stops supervisor on limit occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the intensity stops supervisor on limit scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, IntensityStopsSupervisorOnLimit) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -888,6 +947,11 @@ TEST(Supervisor, IntensityStopsSupervisorOnLimit) {
 // Summary: When restart intensity is zero, the supervisor stops immediately.
 // Description: This test configures zero restarts and fails the child once. The
 // observer should capture an error down signal from the supervisor.
+// EARS: When zero intensity stops supervisor occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the zero
+// intensity stops supervisor scenario and asserts the observable outputs/state
+// transitions. Justification: those assertions directly verify the requirement
+// outcome.
 TEST(Supervisor, ZeroIntensityStopsSupervisor) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -907,6 +971,11 @@ TEST(Supervisor, ZeroIntensityStopsSupervisor) {
 // Summary: When stop and delete are requested, children shall not restart.
 // Description: This test stops and deletes the child from within the supervisor
 // and confirms the child only starts once.
+// EARS: When stop and delete suppress restart occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the stop
+// and delete suppress restart scenario and asserts the observable outputs/state
+// transitions. Justification: those assertions directly verify the requirement
+// outcome.
 TEST(Supervisor, StopAndDeleteSuppressRestart) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -920,6 +989,11 @@ TEST(Supervisor, StopAndDeleteSuppressRestart) {
 // Summary: When using the standard scheduler, restarts shall still occur.
 // Description: This test uses the non-deterministic scheduler to cover its
 // restart path, stopping a child and verifying a restart.
+// EARS: When scheduler based restart works occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the
+// scheduler based restart works scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, SchedulerBasedRestartWorks) {
   agner::Scheduler scheduler;
   ChildLog log;
@@ -937,6 +1011,11 @@ TEST(Supervisor, SchedulerBasedRestartWorks) {
 // Summary: When a supervisor handles an exit signal, it should process it.
 // Description: This test stops a child with an error and verifies the
 // supervisor restarts it.
+// EARS: When exit signal triggers handle exit occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the exit
+// signal triggers handle exit scenario and asserts the observable outputs/state
+// transitions. Justification: those assertions directly verify the requirement
+// outcome.
 TEST(Supervisor, ExitSignalTriggersHandleExit) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -953,10 +1032,82 @@ TEST(Supervisor, ExitSignalTriggersHandleExit) {
   scheduler.run_until_idle();
 }
 
+// Summary: Stopping a supervisor stops active children without restarting.
+// Description: This test monitors a running child, stops the supervisor, and
+// verifies the child exits with a stopped reason while start count stays
+// stable. EARS: When stop stops active children occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the stop stops active children scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
+TEST(Supervisor, StopStopsActiveChildren) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+  SignalCapture capture;
+  auto supervisor = scheduler.spawn<OneForOneSupervisor>(&log);
+
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[1], 1);
+  auto child = log.refs[1];
+  ASSERT_TRUE(child.valid());
+
+  scheduler.spawn<DeterministicObserver>(child, &capture);
+  scheduler.run_until_idle();
+
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.run_until_idle();
+
+  ASSERT_TRUE(capture.down_kind.has_value());
+  EXPECT_EQ(*capture.down_kind, agner::ExitReason::Kind::stopped);
+  EXPECT_EQ(log.starts[1], 1);
+}
+
+// Summary: Child stop signals during shutdown do not trigger restart churn.
+// Description: This test defers stop delivery, flushes supervisor stop first,
+// then flushes the queued child stop and verifies there is no child restart.
+// EARS: When stop queues child stops without restart churn occurs, the
+// supervisor component shall exhibit the expected behavior. Test method: This
+// test drives the stop queues child stops without restart churn scenario and
+// asserts the observable outputs/state transitions. Justification: those
+// assertions directly verify the requirement outcome.
+TEST(Supervisor, StopQueuesChildStopsWithoutRestartChurn) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+  SignalCapture capture;
+  auto supervisor = scheduler.spawn<OneForOneSupervisor>(&log);
+
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[1], 1);
+  auto child = log.refs[1];
+  ASSERT_TRUE(child.valid());
+
+  scheduler.spawn<DeterministicObserver>(child, &capture);
+  scheduler.run_until_idle();
+
+  scheduler.defer_stop_delivery();
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  ASSERT_EQ(scheduler.pending_stop_count(), 1u);
+
+  scheduler.flush_stop(supervisor);
+  EXPECT_EQ(scheduler.pending_stop_count(), 1u);
+
+  scheduler.flush_stop(child);
+  scheduler.run_until_idle();
+
+  ASSERT_TRUE(capture.down_kind.has_value());
+  EXPECT_EQ(*capture.down_kind, agner::ExitReason::Kind::stopped);
+  EXPECT_EQ(log.starts[1], 1);
+}
+
 // Summary: When a non-simple supervisor is asked to start an already running
 // child, it should return the existing ref.
 // Description: This test starts a child twice via start_child and verifies the
 // same ActorRef is returned in both cases.
+// EARS: When start child returns existing ref occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the start
+// child returns existing ref scenario and asserts the observable outputs/state
+// transitions. Justification: those assertions directly verify the requirement
+// outcome.
 TEST(Supervisor, StartChildReturnsExistingRef) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -973,6 +1124,11 @@ TEST(Supervisor, StartChildReturnsExistingRef) {
 // removed.
 // Description: This test stops a temporary simple child with an error reason
 // and verifies it does not restart.
+// EARS: When simple temporary child is removed occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the simple
+// temporary child is removed scenario and asserts the observable outputs/state
+// transitions. Justification: those assertions directly verify the requirement
+// outcome.
 TEST(Supervisor, SimpleTemporaryChildIsRemoved) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -990,6 +1146,11 @@ TEST(Supervisor, SimpleTemporaryChildIsRemoved) {
 // Summary: When restart intensity windows are exceeded, old entries are pruned.
 // Description: This test triggers restarts across time to cover pruning of
 // restart history.
+// EARS: When restart window prunes old entries occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the
+// restart window prunes old entries scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, RestartWindowPrunesOldEntries) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1010,6 +1171,11 @@ TEST(Supervisor, RestartWindowPrunesOldEntries) {
 // Summary: When a restart group has no running children, it finalizes directly.
 // Description: This test stops all children before any failure so the restart
 // group plan contains no running instances when triggered.
+// EARS: When restart group finalizes with no pending stops occurs, the
+// supervisor component shall exhibit the expected behavior. Test method: This
+// test drives the restart group finalizes with no pending stops scenario and
+// asserts the observable outputs/state transitions. Justification: those
+// assertions directly verify the requirement outcome.
 TEST(Supervisor, RestartGroupFinalizesWithNoPendingStops) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1028,6 +1194,11 @@ TEST(Supervisor, RestartGroupFinalizesWithNoPendingStops) {
 // Summary: When stop is requested for a stop/delete supervisor, it exits.
 // Description: This test stops the supervisor after it calls stop/delete to
 // ensure its supervise loop can exit cleanly.
+// EARS: When stop delete supervisor stops occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the stop
+// delete supervisor stops scenario and asserts the observable outputs/state
+// transitions. Justification: those assertions directly verify the requirement
+// outcome.
 TEST(Supervisor, StopDeleteSupervisorStops) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1043,7 +1214,12 @@ TEST(Supervisor, StopDeleteSupervisorStops) {
 
 // Summary: When an unknown actor sends an exit signal, the supervisor ignores
 // it. Description: This test sends a fabricated exit signal with an unknown
-// ActorRef and verifies no restarts occur.
+// ActorRef and then verifies the supervisor still restarts a real child
+// failure. EARS: When unknown exit signal is ignored occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the unknown exit signal is ignored scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, UnknownExitSignalIsIgnored) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1056,11 +1232,52 @@ TEST(Supervisor, UnknownExitSignalIsIgnored) {
   scheduler.run_until_idle();
 
   EXPECT_EQ(log.starts[1], 1);
+
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[1], 2);
 }
 
-// Summary: When an exit signal comes from self without stopping, it is handled.
+// Summary: When a non-child actor sends an exit signal, it is ignored.
+// Description: This test uses a valid non-child ActorRef as signal source and
+// verifies the supervisor still restarts a real child failure.
+// EARS: When non child exit signal is ignored occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the non
+// child exit signal is ignored scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
+TEST(Supervisor, NonChildExitSignalIsIgnored) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+  auto supervisor = scheduler.spawn<OneForOneSupervisor>(&log);
+
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[1], 1);
+
+  auto outsider = scheduler.spawn<LoggedChild>(&log, 99);
+  scheduler.run_until_idle();
+  ASSERT_TRUE(outsider.valid());
+
+  scheduler.spawn<ExitSignalSender>(supervisor, outsider);
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[1], 1);
+
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[1], 2);
+}
+
+// Summary: When an exit signal comes from self without stopping, it is ignored.
 // Description: This test sends an exit signal from the supervisor ref and
-// verifies no stop is requested.
+// then verifies the supervisor still restarts a real child failure.
+// EARS: When exit signal from self without stopping is ignored occurs, the
+// supervisor component shall exhibit the expected behavior. Test method: This
+// test drives the exit signal from self without stopping is ignored scenario
+// and asserts the observable outputs/state transitions. Justification: those
+// assertions directly verify the requirement outcome.
 TEST(Supervisor, ExitSignalFromSelfWithoutStoppingIsIgnored) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1074,14 +1291,21 @@ TEST(Supervisor, ExitSignalFromSelfWithoutStoppingIsIgnored) {
 
   EXPECT_EQ(log.starts[1], 1);
 
-  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
   scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[1], 2);
 }
 
-// Summary: When a down signal arrives from self, it is treated like a child.
+// Summary: When a down signal arrives from self, it is ignored.
 // Description: This test sends a self down signal with a live child and ensures
-// no unexpected restarts happen.
-TEST(Supervisor, DownSignalFromSelfIsHandled) {
+// the supervisor still restarts a real child failure.
+// EARS: When down signal from self is ignored occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the down
+// signal from self is ignored scenario and asserts the observable outputs/state
+// transitions. Justification: those assertions directly verify the requirement
+// outcome.
+TEST(Supervisor, DownSignalFromSelfIsIgnored) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
   auto supervisor = scheduler.spawn<OneForOneSupervisor>(&log);
@@ -1094,13 +1318,51 @@ TEST(Supervisor, DownSignalFromSelfIsHandled) {
 
   EXPECT_EQ(log.starts[1], 1);
 
-  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
   scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[1], 2);
+}
+
+// Summary: When a non-child actor sends a down signal, it is ignored.
+// Description: This test uses a valid non-child ActorRef as signal source and
+// verifies the supervisor still restarts a real child failure.
+// EARS: When non child down signal is ignored occurs, the supervisor component
+// shall exhibit the expected behavior. Test method: This test drives the non
+// child down signal is ignored scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
+TEST(Supervisor, NonChildDownSignalIsIgnored) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+  auto supervisor = scheduler.spawn<OneForOneSupervisor>(&log);
+
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[1], 1);
+
+  auto outsider = scheduler.spawn<LoggedChild>(&log, 99);
+  scheduler.run_until_idle();
+  ASSERT_TRUE(outsider.valid());
+
+  scheduler.spawn<DownSignalSender>(supervisor, outsider);
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[1], 1);
+
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[1], 2);
 }
 
 // Summary: When restart limits are exceeded in group strategies, it stops.
 // Description: This test uses zero intensity to force register_restart to fail
 // and skip starting a restart group.
+// EARS: When restart group stops on zero intensity occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the restart group stops on zero intensity scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, RestartGroupStopsOnZeroIntensity) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1120,6 +1382,11 @@ TEST(Supervisor, RestartGroupStopsOnZeroIntensity) {
 // Summary: When a simple-one-for-one child exits stopped, it is erased.
 // Description: This test stops the child with a stopped reason and confirms the
 // child does not restart.
+// EARS: When simple temporary child removed on stop occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the simple temporary child removed on stop scenario and asserts the
+// observable outputs/state transitions. Justification: those assertions
+// directly verify the requirement outcome.
 TEST(Supervisor, SimpleTemporaryChildRemovedOnStop) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1134,24 +1401,14 @@ TEST(Supervisor, SimpleTemporaryChildRemovedOnStop) {
   EXPECT_EQ(log.starts[1], 1);
 }
 
-// Summary: When a restart group plans a stopped child, it is not restarted.
-// Description: This test triggers a one-for-all restart group and verifies the
-// stopped child is skipped in the plan.
-TEST(Supervisor, RestartGroupSkipsStoppedChild) {
-  agner::DeterministicScheduler scheduler;
-  ChildLog log;
-  scheduler.spawn<OneForAllSupervisor>(&log);
-
-  scheduler.run_until_idle();
-  scheduler.stop(log.refs[2], {agner::ExitReason::Kind::error});
-  scheduler.run_until_idle();
-
-  EXPECT_GE(log.starts[1], 1);
-}
-
 // Summary: When a no-arg child is started, it should use default arguments.
 // Description: This test starts a simple-one-for-one no-arg child and verifies
 // the child ran once.
+// EARS: When simple one for one no arg child starts occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the simple one for one no arg child starts scenario and asserts the
+// observable outputs/state transitions. Justification: those assertions
+// directly verify the requirement outcome.
 TEST(Supervisor, SimpleOneForOneNoArgChildStarts) {
   agner::DeterministicScheduler scheduler;
   no_arg_starts = 0;
@@ -1162,35 +1419,29 @@ TEST(Supervisor, SimpleOneForOneNoArgChildStarts) {
   EXPECT_EQ(no_arg_starts, 1);
 }
 
-// Summary: When restart history exceeds the time window, entries are pruned.
-// Description: This test advances the deterministic scheduler to prune history
-// in register_restart.
-TEST(Supervisor, RestartLoopPrunesHistory) {
+// Summary: Simple-one-for-one init skips static startup.
+// Description: This test runs a simple-one-for-one supervisor through Base::run
+// and verifies no child is auto-started from init().
+// EARS: When simple-one-for-one init runs, the supervisor shall skip static
+// child startup.
+TEST(Supervisor, SimpleOneForOneInitSkipsStaticStart) {
   agner::DeterministicScheduler scheduler;
-  ChildLog log;
-  scheduler.spawn<RestartLoopSupervisor>(&log);
+  no_arg_starts = 0;
 
+  scheduler.spawn<SimpleInitBranchSupervisor>();
   scheduler.run_until_idle();
 
-  EXPECT_GE(log.starts[1], 1);
-}
-
-// Summary: When stop/delete are called on active refs, they should stop
-// normally. Description: This test uses stop/delete with a live ref and ensures
-// the supervisor exits cleanly.
-TEST(Supervisor, StopDeleteStopsActiveRef) {
-  agner::DeterministicScheduler scheduler;
-  ChildLog log;
-  scheduler.spawn<StopDeleteSupervisor>(&log);
-
-  scheduler.run_until_idle();
-
-  EXPECT_GE(log.starts[1], 1);
+  EXPECT_EQ(no_arg_starts, 0);
 }
 
 // Summary: When a temporary group restarts, it should not restart children.
 // Description: This test triggers a one-for-all restart on temporary children
 // and verifies there are no restarts after stopping.
+// EARS: When temporary restart group skips children occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the temporary restart group skips children scenario and asserts the
+// observable outputs/state transitions. Justification: those assertions
+// directly verify the requirement outcome.
 TEST(Supervisor, TemporaryRestartGroupSkipsChildren) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1210,6 +1461,11 @@ TEST(Supervisor, TemporaryRestartGroupSkipsChildren) {
 // Summary: When an exit signal has no from actor, it is ignored.
 // Description: This test sends an exit signal with an invalid ActorRef and
 // verifies no restart occurs.
+// EARS: When exit signal without from is ignored occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the exit signal without from is ignored scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, ExitSignalWithoutFromIsIgnored) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1227,6 +1483,11 @@ TEST(Supervisor, ExitSignalWithoutFromIsIgnored) {
 // Summary: When a down signal has no from actor, it is ignored.
 // Description: This test sends a down signal with an invalid ActorRef and
 // verifies no restart occurs.
+// EARS: When down signal without from is ignored occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the down signal without from is ignored scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, DownSignalWithoutFromIsIgnored) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
@@ -1244,19 +1505,24 @@ TEST(Supervisor, DownSignalWithoutFromIsIgnored) {
 // Summary: When restart_child is called on an active child, it stops and
 // restarts. Description: This test calls restart_child on a running child and
 // verifies it restarts.
+// EARS: When restart child stops and restarts active child occurs, the
+// supervisor component shall exhibit the expected behavior. Test method: This
+// test drives the restart child stops and restarts active child scenario and
+// asserts the observable outputs/state transitions. Justification: those
+// assertions directly verify the requirement outcome.
 TEST(Supervisor, RestartChildStopsAndRestartsActiveChild) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
 
   // Create a supervisor that exposes restart_child through a message
   class RestartChildSupervisor
-      : public agner::Supervisor<agner::DeterministicScheduler,
-                                 RestartChildSupervisor,
-                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+      : public agner::Supervisor<
+            agner::DeterministicScheduler, RestartChildSupervisor,
+            agner::ChildSpec<LoggedChild, ChildLog*, int>> {
    public:
-    using Base = agner::Supervisor<agner::DeterministicScheduler,
-                                   RestartChildSupervisor,
-                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+    using Base =
+        agner::Supervisor<agner::DeterministicScheduler, RestartChildSupervisor,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>>;
 
     RestartChildSupervisor(agner::DeterministicScheduler& scheduler,
                            ChildLog* log)
@@ -1295,18 +1561,23 @@ TEST(Supervisor, RestartChildStopsAndRestartsActiveChild) {
 // Summary: When stop_child is called on a running child, it sets suppress flag.
 // Description: This test stops a child via stop_child and verifies it doesn't
 // restart when it exits.
+// EARS: When stop child suppresses restart on active child occurs, the
+// supervisor component shall exhibit the expected behavior. Test method: This
+// test drives the stop child suppresses restart on active child scenario and
+// asserts the observable outputs/state transitions. Justification: those
+// assertions directly verify the requirement outcome.
 TEST(Supervisor, StopChildSuppressesRestartOnActiveChild) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
 
   class StopChildSupervisor
-      : public agner::Supervisor<agner::DeterministicScheduler,
-                                 StopChildSupervisor,
-                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+      : public agner::Supervisor<
+            agner::DeterministicScheduler, StopChildSupervisor,
+            agner::ChildSpec<LoggedChild, ChildLog*, int>> {
    public:
-    using Base = agner::Supervisor<agner::DeterministicScheduler,
-                                   StopChildSupervisor,
-                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+    using Base =
+        agner::Supervisor<agner::DeterministicScheduler, StopChildSupervisor,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>>;
 
     StopChildSupervisor(agner::DeterministicScheduler& scheduler, ChildLog* log)
         : Base(scheduler), log_(log) {}
@@ -1343,18 +1614,23 @@ TEST(Supervisor, StopChildSuppressesRestartOnActiveChild) {
 
 // Summary: When delete_child is called, it removes the child from registry.
 // Description: This test deletes a child and verifies it doesn't restart.
+// EARS: When delete child removes from registry occurs, the supervisor
+// component shall exhibit the expected behavior. Test method: This test drives
+// the delete child removes from registry scenario and asserts the observable
+// outputs/state transitions. Justification: those assertions directly verify
+// the requirement outcome.
 TEST(Supervisor, DeleteChildRemovesFromRegistry) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
 
   class DeleteChildSupervisor
-      : public agner::Supervisor<agner::DeterministicScheduler,
-                                 DeleteChildSupervisor,
-                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+      : public agner::Supervisor<
+            agner::DeterministicScheduler, DeleteChildSupervisor,
+            agner::ChildSpec<LoggedChild, ChildLog*, int>> {
    public:
-    using Base = agner::Supervisor<agner::DeterministicScheduler,
-                                   DeleteChildSupervisor,
-                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+    using Base =
+        agner::Supervisor<agner::DeterministicScheduler, DeleteChildSupervisor,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>>;
 
     DeleteChildSupervisor(agner::DeterministicScheduler& scheduler,
                           ChildLog* log)
@@ -1390,25 +1666,30 @@ TEST(Supervisor, DeleteChildRemovesFromRegistry) {
   scheduler.run_until_idle();
 }
 
-// Summary: Multi-spec supervisor operations skip children of other spec indices.
-// Description: This test creates a supervisor with two child specs, starts both,
-// then calls stop/restart/delete on one spec while the other remains active.
-// This exercises the continue statements in stop_and_suppress_by_index,
-// restart_children_by_index, and delete_children_by_index.
+// Summary: Multi-spec supervisor operations skip children of other spec
+// indices. Description: This test creates a supervisor with two child specs,
+// starts both, then calls stop/restart/delete on one spec while the other
+// remains active. This exercises the continue statements in
+// stop_and_suppress_by_index, restart_children_by_index, and
+// delete_children_by_index. EARS: When multi spec operations skip other indices
+// occurs, the supervisor component shall exhibit the expected behavior. Test
+// method: This test drives the multi spec operations skip other indices
+// scenario and asserts the observable outputs/state transitions. Justification:
+// those assertions directly verify the requirement outcome.
 TEST(Supervisor, MultiSpecOperationsSkipOtherIndices) {
   agner::DeterministicScheduler scheduler;
   ChildLog log;
 
   class MultiSpecSupervisor
-      : public agner::Supervisor<agner::DeterministicScheduler,
-                                 MultiSpecSupervisor,
-                                 agner::ChildSpec<LoggedChild, ChildLog*, int>,
-                                 agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+      : public agner::Supervisor<
+            agner::DeterministicScheduler, MultiSpecSupervisor,
+            agner::ChildSpec<LoggedChild, ChildLog*, int>,
+            agner::ChildSpec<LoggedChild, ChildLog*, int>> {
    public:
-    using Base = agner::Supervisor<agner::DeterministicScheduler,
-                                   MultiSpecSupervisor,
-                                   agner::ChildSpec<LoggedChild, ChildLog*, int>,
-                                   agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+    using Base =
+        agner::Supervisor<agner::DeterministicScheduler, MultiSpecSupervisor,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>>;
 
     MultiSpecSupervisor(agner::DeterministicScheduler& scheduler, ChildLog* log)
         : Base(scheduler), log_(log) {}
@@ -1448,6 +1729,250 @@ TEST(Supervisor, MultiSpecOperationsSkipOtherIndices) {
   // Child 2 should keep running during all operations on child 1
   EXPECT_EQ(log.starts[1], 1);
   EXPECT_EQ(log.starts[2], 1);
+
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.run_until_idle();
+}
+
+// Summary: When a one_for_all supervisor restarts after a permanent child
+// fails, temporary children in the restart group plan shall be skipped and
+// not restarted.
+// Description: A MixedRestartSupervisor with one permanent child (spec 0) and
+// one temporary child (spec 1) uses the one_for_all strategy. The permanent
+// child is stopped with an error reason, which triggers a group restart. The
+// finalize step iterates the restart plan: the temporary child's plan item
+// evaluates should_restart(temporary, stopped)=false and is skipped via
+// the continue branch. Only the permanent child is respawned, leaving the
+// temporary child's start count at 1.
+// EARS: When a one_for_all group restart occurs, the supervisor shall not
+// restart temporary children included in the group plan.
+TEST(Supervisor, OneForAllTemporaryChildInRestartGroupIsNotRestarted) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+
+  class MixedRestartSupervisor
+      : public agner::Supervisor<
+            agner::DeterministicScheduler, MixedRestartSupervisor,
+            agner::ChildSpec<LoggedChild, ChildLog*, int>,
+            agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+   public:
+    using Base =
+        agner::Supervisor<agner::DeterministicScheduler, MixedRestartSupervisor,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+
+    MixedRestartSupervisor(agner::DeterministicScheduler& scheduler,
+                           ChildLog* log)
+        : Base(scheduler), log_(log) {}
+
+    static Specification specification() {
+      return {
+          .strategy = agner::Strategy::one_for_all,
+          .intensity = {3, 10ms},
+          .children = std::make_tuple(
+              agner::child<LoggedChild, ChildLog*, int>(
+                  {"child_a"}, agner::Restart::permanent, 0ms, nullptr, 1),
+              agner::child<LoggedChild, ChildLog*, int>(
+                  {"child_b"}, agner::Restart::temporary, 0ms, nullptr, 2))};
+    }
+
+    task<void> run() {
+      this->template set_child_args<0>(std::make_tuple(log_, 1));
+      this->template set_child_args<1>(std::make_tuple(log_, 2));
+      co_await Base::run();
+    }
+
+   private:
+    ChildLog* log_;
+  };
+
+  scheduler.spawn<MixedRestartSupervisor>(&log);
+  scheduler.run_until_idle();
+
+  ASSERT_EQ(log.starts[1], 1);
+  ASSERT_EQ(log.starts[2], 1);
+
+  // Stop the permanent child with an error reason. This triggers
+  // begin_restart_group: the plan includes child_a (already removed) and
+  // child_b (temporary, stopped reason). finalize_restart_group skips child_b
+  // because should_restart(temporary, stopped)=false [supervisor.hpp line 549].
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  // Permanent child (id=1) restarts; temporary child (id=2) does not.
+  EXPECT_EQ(log.starts[1], 2);
+  EXPECT_EQ(log.starts[2], 1);
+}
+
+// Summary: When a one_for_all restart group is active and a non-child actor
+// sends a signal, handle_restart_group_stop shall ignore it.
+// Description: This test uses a one_for_all supervisor with three children
+// that use GateChild (stops only after receiving an ExitSignal then a Ping).
+// When the first child is externally stopped, a restart group is created with
+// children 2 and 3 in pending_stops. While the group is active, a non-child
+// actor sends an ExitSignal to the supervisor, routing through
+// handle_restart_group_stop. Since the non-child isn't in children_ or
+// pending_stops, both find operations return end (L474=false, L481=false),
+// pending is not emptied (L485=false), and the group continues waiting for
+// the real children to stop.
+// EARS: When a non-child termination arrives during an active restart group,
+// the supervisor shall ignore it and continue the group restart.
+TEST(Supervisor, RestartGroupIgnoresNonChildTermination) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+
+  class ThreeChildSupervisor
+      : public agner::Supervisor<agner::DeterministicScheduler,
+                                 ThreeChildSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                                 agner::ChildSpec<GateChild, ChildLog*, int>,
+                                 agner::ChildSpec<GateChild, ChildLog*, int>> {
+   public:
+    using Base =
+        agner::Supervisor<agner::DeterministicScheduler, ThreeChildSupervisor,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                          agner::ChildSpec<GateChild, ChildLog*, int>,
+                          agner::ChildSpec<GateChild, ChildLog*, int>>;
+
+    ThreeChildSupervisor(agner::DeterministicScheduler& scheduler,
+                         ChildLog* log)
+        : Base(scheduler), log_(log) {}
+
+    static Specification specification() {
+      return {
+          .strategy = agner::Strategy::one_for_all,
+          .intensity = {3, 10ms},
+          .children = std::make_tuple(
+              agner::child<LoggedChild, ChildLog*, int>(
+                  {"a"}, agner::Restart::permanent, 0ms, null_log(), 1),
+              agner::child<GateChild, ChildLog*, int>(
+                  {"b"}, agner::Restart::permanent, 0ms, null_log(), 2),
+              agner::child<GateChild, ChildLog*, int>(
+                  {"c"}, agner::Restart::permanent, 0ms, null_log(), 3))};
+    }
+
+    task<void> run() {
+      this->template set_child_args<0>(std::make_tuple(log_, 1));
+      this->template set_child_args<1>(std::make_tuple(log_, 2));
+      this->template set_child_args<2>(std::make_tuple(log_, 3));
+      co_await Base::run();
+    }
+
+   private:
+    ChildLog* log_;
+  };
+
+  auto supervisor = scheduler.spawn<ThreeChildSupervisor>(&log);
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[1], 1);
+  ASSERT_EQ(log.starts[2], 1);
+  ASSERT_EQ(log.starts[3], 1);
+
+  // Stop LoggedChild (child 1) with error to trigger a restart group.
+  // LoggedChild exits immediately on ExitSignal. GateChild 2 and 3 get stop
+  // requests but stay alive until they receive Ping, so they're in
+  // pending_stops.
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  // While the restart group is active, send a non-child ExitSignal to the
+  // supervisor. This will enter handle_restart_group_stop but the actor
+  // won't be found in children_ (L474=false) or pending_stops (L481=false).
+  auto outsider = scheduler.spawn<LoggedChild>(&log, 99);
+  scheduler.run_until_idle();
+  scheduler.spawn<ExitSignalSender>(supervisor, outsider);
+  scheduler.run_until_idle();
+
+  // Now let the pending GateChildren actually exit by sending them Ping.
+  // Child 2 received ExitSignal from the group stop; send Ping to ungate it.
+  scheduler.send(log.refs[2], Ping{0});
+  scheduler.run_until_idle();
+  // L485=false: child 2 exited but child 3 is still pending.
+
+  // Now let child 3 exit.
+  scheduler.send(log.refs[3], Ping{0});
+  scheduler.run_until_idle();
+
+  // All pending stops complete, finalize_restart_group runs.
+  // All three permanent children should restart.
+  EXPECT_EQ(log.starts[1], 2);
+  EXPECT_EQ(log.starts[2], 2);
+  EXPECT_EQ(log.starts[3], 2);
+
+  // Clean up
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.run_until_idle();
+}
+
+// Summary: When a child terminates while a restart group is already in
+// progress, handle_termination shall delegate to handle_restart_group_stop.
+// Description: This test uses a one_for_all supervisor with two GateChild
+// actors. When child 1 is stopped with error, a restart group is created
+// and child 2 gets a stop request. Child 2's termination then flows through
+// handle_termination where restart_group_ is set (L430-431), delegating to
+// handle_restart_group_stop.
+// EARS: When a child terminates during an active restart group, the supervisor
+// shall route the termination through handle_restart_group_stop.
+TEST(Supervisor, ChildTerminationDuringActiveRestartGroup) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+
+  class TwoChildSupervisor
+      : public agner::Supervisor<agner::DeterministicScheduler,
+                                 TwoChildSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                                 agner::ChildSpec<GateChild, ChildLog*, int>> {
+   public:
+    using Base =
+        agner::Supervisor<agner::DeterministicScheduler,
+                          TwoChildSupervisor,
+                          agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                          agner::ChildSpec<GateChild, ChildLog*, int>>;
+
+    TwoChildSupervisor(agner::DeterministicScheduler& scheduler, ChildLog* log)
+        : Base(scheduler), log_(log) {}
+
+    static Specification specification() {
+      return {
+          .strategy = agner::Strategy::one_for_all,
+          .intensity = {3, 10ms},
+          .children = std::make_tuple(
+              agner::child<LoggedChild, ChildLog*, int>(
+                  {"a"}, agner::Restart::permanent, 0ms, null_log(), 1),
+              agner::child<GateChild, ChildLog*, int>(
+                  {"b"}, agner::Restart::permanent, 0ms, null_log(), 2))};
+    }
+
+    task<void> run() {
+      this->template set_child_args<0>(std::make_tuple(log_, 1));
+      this->template set_child_args<1>(std::make_tuple(log_, 2));
+      co_await Base::run();
+    }
+
+   private:
+    ChildLog* log_;
+  };
+
+  auto supervisor = scheduler.spawn<TwoChildSupervisor>(&log);
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[1], 1);
+  ASSERT_EQ(log.starts[2], 1);
+
+  // Stop LoggedChild (child 1) with error → it exits immediately.
+  // restart group created, GateChild (child 2) gets a stop request.
+  // The restart_group_ is now set and child 2 is in pending_stops.
+  scheduler.stop(log.refs[1], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  // GateChild 2 received ExitSignal from the group stop. Send Ping to ungate.
+  // Its termination goes through handle_termination → restart_group_ is set
+  // → handle_restart_group_stop (L430-431).
+  scheduler.send(log.refs[2], Ping{0});
+  scheduler.run_until_idle();
+
+  // Both children should restart after the group finalizes.
+  EXPECT_EQ(log.starts[1], 2);
+  EXPECT_EQ(log.starts[2], 2);
 
   scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
   scheduler.run_until_idle();

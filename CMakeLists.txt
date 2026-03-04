@@ -44,6 +44,7 @@ FetchContent_MakeAvailable(benchmark)
 add_executable(agner_tests
   test/actor_test.cpp
   test/actor_control_test.cpp
+  test/genserver_test.cpp
   test/scheduler_test.cpp
   test/supervisor_test.cpp
   test/task_test.cpp

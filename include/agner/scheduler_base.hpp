@@ -129,24 +129,29 @@ class SchedulerBase {
   void notify_exit(ActorRef actor_ref, const ExitReason& reason) {
     auto links_entry = links_.find(actor_ref);
     if (links_entry != links_.end()) {
-      for (auto linked : links_entry->second) {
-        static_cast<Derived*>(this)->send(linked, ExitSignal{actor_ref, reason});
-        auto reverse_entry = links_.find(linked);
-        if (reverse_entry != links_.end()) {
-          auto& reverse_links = reverse_entry->second;
-          reverse_links.erase(std::remove(reverse_links.begin(),
-                                          reverse_links.end(), actor_ref),
-                              reverse_links.end());
-        }
-      }
+      std::for_each(links_entry->second.begin(), links_entry->second.end(),
+                    [&](ActorRef linked) {
+                      static_cast<Derived*>(this)->send(
+                          linked, ExitSignal{actor_ref, reason});
+                      auto reverse_entry = links_.find(linked);
+                      if (reverse_entry != links_.end()) {
+                        auto& reverse_links = reverse_entry->second;
+                        reverse_links.erase(std::remove(reverse_links.begin(),
+                                                        reverse_links.end(),
+                                                        actor_ref),
+                                            reverse_links.end());
+                      }
+                    });
       links_.erase(links_entry);
     }
 
     auto monitors_entry = monitors_.find(actor_ref);
     if (monitors_entry != monitors_.end()) {
-      for (auto monitor_ref : monitors_entry->second) {
-        static_cast<Derived*>(this)->send(monitor_ref, DownSignal{actor_ref, reason});
-      }
+      std::for_each(monitors_entry->second.begin(), monitors_entry->second.end(),
+                    [&](ActorRef monitor_ref) {
+                      static_cast<Derived*>(this)->send(
+                          monitor_ref, DownSignal{actor_ref, reason});
+                    });
       monitors_.erase(monitors_entry);
     }
   }

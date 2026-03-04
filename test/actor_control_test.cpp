@@ -17,6 +17,8 @@ using agner::ActorRef;
 // worker so it exits normally. The observer only learns about exits via the
 // link, and the assertion on `capture.exit_kind` confirms the normal reason was
 // delivered.
+// EARS: When link receives exit occurs, the actor component shall exhibit the expected behavior.
+// Test method: This test drives the link receives exit scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(Actor, LinkReceivesExit) {
   agner::Scheduler scheduler;
   SignalCapture capture;
@@ -39,6 +41,8 @@ TEST(Actor, LinkReceivesExit) {
 // normal exit, and runs the scheduler. The down signal can only arrive through
 // the monitor path, and the assertion on `capture.down_kind` confirms the
 // reason is recorded.
+// EARS: When monitor receives down occurs, the actor component shall exhibit the expected behavior.
+// Test method: This test drives the monitor receives down scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(Actor, MonitorReceivesDown) {
   agner::Scheduler scheduler;
   SignalCapture capture;
@@ -61,6 +65,8 @@ TEST(Actor, MonitorReceivesDown) {
 // `stopped` reason, and runs the scheduler. The assertion on
 // `capture.exit_kind` confirms the stopped reason is delivered through the
 // link.
+// EARS: When link receives stopped reason occurs, the actor component shall exhibit the expected behavior.
+// Test method: This test drives the link receives stopped reason scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(Actor, LinkReceivesStoppedReason) {
   agner::Scheduler scheduler;
   SignalCapture capture;
@@ -82,6 +88,8 @@ TEST(Actor, LinkReceivesStoppedReason) {
 // signal with error reason. Description: This test monitors an actor and stops
 // it with an error reason. The assertion on `capture.down_kind` confirms the
 // error reason is delivered through monitoring.
+// EARS: When monitor receives error reason occurs, the actor component shall exhibit the expected behavior.
+// Test method: This test drives the monitor receives error reason scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(Actor, MonitorReceivesErrorReason) {
   agner::Scheduler scheduler;
   SignalCapture capture;
@@ -103,6 +111,8 @@ TEST(Actor, MonitorReceivesErrorReason) {
 // exit and down signals. Description: This test both links and monitors a
 // worker, then stops it to trigger normal exit. The assertions on `exit_kind`
 // and `down_kind` confirm both signals were delivered.
+// EARS: When link and monitor both fire occurs, the actor component shall exhibit the expected behavior.
+// Test method: This test drives the link and monitor both fire scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(Actor, LinkAndMonitorBothFire) {
   agner::Scheduler scheduler;
   SignalCapture capture;
@@ -126,6 +136,8 @@ TEST(Actor, LinkAndMonitorBothFire) {
 // caller. Description: This test spawns a worker using spawn_link and stops it
 // to trigger an exit signal. The assertion on `capture.exit_kind` confirms the
 // link was established at spawn time.
+// EARS: When spawn link establishes link occurs, the scheduler component shall exhibit the expected behavior.
+// Test method: This test drives the spawn link establishes link scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(Scheduler, SpawnLinkEstablishesLink) {
   agner::Scheduler scheduler;
   SignalCapture capture;
@@ -144,6 +156,8 @@ TEST(Scheduler, SpawnLinkEstablishesLink) {
 // by the caller. Description: This test spawns a worker using spawn_monitor and
 // stops it to trigger a down signal. The assertion on `capture.down_kind`
 // confirms the monitor was established at spawn time.
+// EARS: When spawn monitor establishes monitor occurs, the scheduler component shall exhibit the expected behavior.
+// Test method: This test drives the spawn monitor establishes monitor scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(Scheduler, SpawnMonitorEstablishesMonitor) {
   agner::Scheduler scheduler;
   SignalCapture capture;
@@ -162,6 +176,8 @@ TEST(Scheduler, SpawnMonitorEstablishesMonitor) {
 // silently dropped. Description: This test sends an std::any with a string type
 // to an actor expecting Ping. The test passes if no crash occurs, confirming
 // unmatched messages are silently dropped.
+// EARS: When unmatched message is dropped occurs, the actor control component shall exhibit the expected behavior.
+// Test method: This test drives the unmatched message is dropped scenario and asserts the observable outputs/state transitions. Justification: those assertions directly verify the requirement outcome.
 TEST(ActorControl, UnmatchedMessageIsDropped) {
   agner::Scheduler scheduler;
   int value = 0;
