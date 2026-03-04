@@ -43,6 +43,7 @@
 #include "agner/actor_concepts.hpp"
 #include "agner/actor_control.hpp"
 #include "agner/errors.hpp"
+#include "agner/gen_event.hpp"
 #include "agner/genserver.hpp"
 #include "agner/scheduler.hpp"
 #include "agner/scheduler_base.hpp"
