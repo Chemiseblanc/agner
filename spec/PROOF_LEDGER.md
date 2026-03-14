@@ -82,10 +82,11 @@ Based on a review of the implemented C++ features versus the current TLA+ models
 ### Action Plan
 1. **Phase 1: Complete Existing Abstractions**
    - Create `spec/abstractions/gen_event/contract/handler_ordering/` to model GenServer handler contracts.
-   - Expand `spec/abstractions/supervisor/failure/` to include `supervisor_one_for_all`, `supervisor_rest_for_one`, and `supervisor_simple_one_for_one`.
-   - Create `spec/abstractions/genserver/contract/cast_ordering/` for GenServer asynchronous semantics.
+   - [X] Expand `spec/abstractions/supervisor/failure/` to include `supervisor_one_for_all`, `supervisor_rest_for_one`.
+   - [X] Add `supervisor_simple_one_for_one`.
+   - [X] Create `spec/abstractions/genserver/contract/cast_ordering/` for GenServer asynchronous semantics.
 2. **Phase 2: Core Timeout & Termination Models**
-   - Create `spec/core/coordination/shutdown/graceful_shutdown/` for termination ordering and shutdown timeouts.
+   - [X] Create `spec/core/coordination/shutdown/graceful_shutdown/` for termination ordering and shutdown timeouts.
    - [X] Create `spec/core/timing/timers/timer_lifecycle/` to cover complex timer cancellation and actor exit races. Found and fixed UAF bug in C++.
 3. **Phase 3: Advanced Systems Patterns**
    - Address multi-level supervision trees (`systems/supervision/tree_restart_cascades/`).
