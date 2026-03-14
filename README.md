@@ -2,7 +2,7 @@
 
 # Features
 - Erlang process based actor framework
-- OTP-style GenServer, Supervisor, and GenEvent primitives
+- OTP-style GenServer and Supervisor primitives
 - FoundationDB style deterministic testing
 
 # Formal model

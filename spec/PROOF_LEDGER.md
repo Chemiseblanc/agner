@@ -71,7 +71,6 @@ Models added under `systems/` should follow the same pattern:
 Based on a review of the implemented C++ features versus the current TLA+ models, several critical gaps exist in the specification.
 
 ### 1. Missing Abstractions
-- ~~**GenServer**: The `gen_event` feature is fully implemented in C++ but lacks a corresponding TLA+ model. A model is needed to verify handler registration, removal, event delivery ordering, and failure semantics.~~ (Removed)
 - **Supervisor Strategies**: The current model (`supervisor_restart`) only covers the `one_for_one` strategy. Models are required for `one_for_all`, `rest_for_one`, and `simple_one_for_one` to match the C++ implementation.
 - **GenServer Cast & Info**: The `genserver_call` model is thorough for synchronous requests, but asynchronous `cast` (fire-and-forget) and general `info` message handling must also be modeled to clarify ordering and asynchronous contracts.
 
@@ -81,7 +80,6 @@ Based on a review of the implemented C++ features versus the current TLA+ models
 
 ### Action Plan
 1. **Phase 1: Complete Existing Abstractions**
-   - ~~Create `spec/abstractions/gen_event/contract/handler_ordering/` to model GenServer handler contracts.~~ (Removed)
    - [X] Expand `spec/abstractions/supervisor/failure/` to include `supervisor_one_for_all`, `supervisor_rest_for_one`.
    - [X] Add `supervisor_simple_one_for_one`.
    - [X] Create `spec/abstractions/genserver/contract/cast_ordering/` for GenServer asynchronous semantics.
@@ -90,4 +88,3 @@ Based on a review of the implemented C++ features versus the current TLA+ models
    - [X] Create `spec/core/timing/timers/timer_lifecycle/` to cover complex timer cancellation and actor exit races. Found and fixed UAF bug in C++.
 3. **Phase 3: Advanced Systems Patterns**
    - [X] Address multi-level supervision trees (`systems/supervision/tree_restart_cascades/`).
-   - ~~Address GenServer cascading handlers (`systems/events/handler_dependency_chains/`).~~ (Removed)
