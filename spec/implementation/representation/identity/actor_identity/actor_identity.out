@@ -1,0 +1,511 @@
+@!@!@STARTMSG 2262:0 @!@!@
+TLC2 Version 2026.03.11.044424 (rev: 8a23cb1)
+@!@!@ENDMSG 2262 @!@!@
+@!@!@STARTMSG 2187:0 @!@!@
+Running breadth-first search Model-Checking with fp 124 and seed -691812264265479457 with 1 worker on 20 cores with 7115MB heap and 64MB offheap memory [pid: 17217] (Linux 6.6.87.2-microsoft-standard-WSL2 amd64, Arch Linux 25.0.2 x86_64, MSBDiskFPSet, DiskStateQueue).
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file /home/matt/proj/agner/spec/actor_identity/actor_identity.tla
+Parsing file /home/matt/proj/agner/spec/shared/actor_system.tla (file:/home/matt/proj/agner/spec/actor_identity/actor_system.tla)
+Parsing file /tmp/tlc-16508588230891080040/_TLCTrace.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.110453/tools/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /home/matt/proj/agner/spec/shared/actor_defs.tla (file:/home/matt/proj/agner/spec/actor_identity/actor_defs.tla)
+Parsing file /tmp/tlc-16508588230891080040/TLC.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.110453/tools/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-16508588230891080040/Naturals.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.110453/tools/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-16508588230891080040/Sequences.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.110453/tools/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-16508588230891080040/FiniteSets.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.110453/tools/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-16508588230891080040/TLCExt.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.110453/tools/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-16508588230891080040/Integers.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.110453/tools/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module actor_defs
+Semantic processing of module TLC
+Semantic processing of module actor_system
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module actor_identity
+Linting of module actor_defs
+Linting of module actor_system
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module actor_identity
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 2185:0 @!@!@
+Starting... (2026-03-14 08:21:36)
+@!@!@ENDMSG 2185 @!@!@
+@!@!@STARTMSG 2189:0 @!@!@
+Computing initial states...
+@!@!@ENDMSG 2189 @!@!@
+@!@!@STARTMSG 2190:0 @!@!@
+Finished computing initial states: 1 distinct state generated at 2026-03-14 08:21:36.
+@!@!@ENDMSG 2190 @!@!@
+@!@!@STARTMSG 2193:0 @!@!@
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.0E-16
+@!@!@ENDMSG 2193 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2026-03-14 08:21:36 (see https://explain.tlapl.us/module-coverage-statistics for how to interpret the following statistics).
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<phase line 26, col 52 to line 26, col 56 of module actor_identity>: 4
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<timers line 25, col 61 to line 25, col 66 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<ready line 25, col 27 to line 25, col 31 of module actor_system>: 7
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<observations line 26, col 11 to line 26, col 22 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<msg_state line 26, col 25 to line 26, col 33 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<actor_ids line 26, col 20 to line 26, col 28 of module actor_identity>: 15
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<next_id line 26, col 11 to line 26, col 17 of module actor_identity>: 3
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<exit_reason line 27, col 28 to line 27, col 38 of module actor_system>: 4
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<pc line 25, col 23 to line 25, col 24 of module actor_system>: 10
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<pending_result line 25, col 45 to line 25, col 58 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<time line 26, col 36 to line 26, col 39 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<kind line 25, col 17 to line 25, col 20 of module actor_system>: 7
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<links line 27, col 11 to line 27, col 15 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<dead_sends line 26, col 40 to line 26, col 49 of module actor_identity>: 2
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<spawned line 26, col 31 to line 26, col 37 of module actor_identity>: 7
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<monitors line 27, col 18 to line 27, col 25 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<live line 25, col 11 to line 25, col 14 of module actor_system>: 7
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<mailboxes line 25, col 34 to line 25, col 42 of module actor_system>: 1
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2773:0 @!@!@
+<IdentityInit line 36, col 1 to line 36, col 12 of module actor_identity>: 1:1
+@!@!@ENDMSG 2773 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 37, col 6 to line 37, col 14 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 38, col 13 to line 38, col 40 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 38, col 20 to line 38, col 28 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 39, col 11 to line 39, col 40 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 39, col 18 to line 39, col 26 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 40, col 6 to line 40, col 15 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 41, col 18 to line 41, col 43 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 41, col 39 to line 41, col 42 of module actor_identity: 3
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 41, col 25 to line 41, col 33 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 42, col 23 to line 42, col 53 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 42, col 44 to line 42, col 52 of module actor_identity: 3
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 42, col 30 to line 42, col 38 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 43, col 15 to line 43, col 46 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 43, col 36 to line 43, col 45 of module actor_identity: 3
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 43, col 22 to line 43, col 30 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 44, col 21 to line 44, col 46 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 44, col 42 to line 44, col 45 of module actor_identity: 3
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 44, col 28 to line 44, col 36 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 45, col 18 to line 45, col 49 of module actor_identity: 1:2
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 45, col 26 to line 45, col 35 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 47, col 6 to line 47, col 15 of module actor_identity: 1:18
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 48, col 6 to line 48, col 18 of module actor_identity: 1:18
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 49, col 20 to line 49, col 47 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 49, col 27 to line 49, col 35 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 51, col 18 to line 51, col 40 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 51, col 25 to line 51, col 33 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 52, col 6 to line 52, col 17 of module actor_identity: 1:3
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 54, col 6 to line 54, col 23 of module actor_identity: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<SpawnActor line 71, col 1 to line 71, col 13 of module actor_identity>: 15:15
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 72, col 6 to line 72, col 23 of module actor_identity: 171
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 72, col 6 to line 72, col 10 of module actor_identity: 156
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 73, col 6 to line 73, col 20 of module actor_identity: 45
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 73, col 6 to line 73, col 6 of module actor_identity: 30
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 73, col 12 to line 73, col 20 of module actor_identity: 30
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 74, col 6 to line 74, col 21 of module actor_identity: 45
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 74, col 6 to line 74, col 6 of module actor_identity: 30
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 74, col 15 to line 74, col 21 of module actor_identity: 30
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 75, col 6 to line 75, col 51 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 76, col 6 to line 76, col 27 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 77, col 6 to line 77, col 34 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 77, col 17 to line 77, col 34 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 77, col 17 to line 77, col 23 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 77, col 32 to line 77, col 34 of module actor_identity: 15:51
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 77, col 33 to line 77, col 33 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 78, col 6 to line 78, col 28 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 78, col 14 to line 78, col 28 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 78, col 14 to line 78, col 17 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 78, col 26 to line 78, col 28 of module actor_identity: 15:24
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 78, col 27 to line 78, col 27 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 79, col 6 to line 79, col 45 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 80, col 6 to line 80, col 39 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 81, col 6 to line 81, col 30 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 81, col 15 to line 81, col 30 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 81, col 15 to line 81, col 19 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 81, col 28 to line 81, col 30 of module actor_identity: 15:24
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 81, col 29 to line 81, col 29 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 82, col 6 to line 85, col 19 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 83, col 8 to line 85, col 19 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 83, col 11 to line 83, col 40 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 83, col 11 to line 83, col 28 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 83, col 11 to line 83, col 17 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||||line 83, col 26 to line 83, col 28 of module actor_identity: 15:24
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 83, col 27 to line 83, col 27 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 83, col 32 to line 83, col 40 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 85, col 15 to line 85, col 19 of module actor_identity: 9
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 86, col 6 to line 87, col 76 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<KillActor line 90, col 1 to line 90, col 12 of module actor_identity>: 18:18
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 91, col 6 to line 91, col 23 of module actor_identity: 174
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 91, col 6 to line 91, col 10 of module actor_identity: 156
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 92, col 6 to line 92, col 15 of module actor_identity: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 92, col 6 to line 92, col 6 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 92, col 12 to line 92, col 15 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 93, col 6 to line 93, col 23 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 94, col 6 to line 94, col 36 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 95, col 6 to line 95, col 25 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 96, col 6 to line 96, col 58 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 97, col 6 to line 97, col 59 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 98, col 6 to line 98, col 50 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 99, col 6 to line 99, col 25 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 101, col 75 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<SendToDead line 105, col 1 to line 105, col 26 of module actor_identity>: 18:36
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 106, col 6 to line 106, col 24 of module actor_identity: 504
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 106, col 6 to line 106, col 10 of module actor_identity: 468
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 107, col 6 to line 107, col 20 of module actor_identity: 198
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 107, col 6 to line 107, col 11 of module actor_identity: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 107, col 17 to line 107, col 20 of module actor_identity: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 108, col 6 to line 108, col 23 of module actor_identity: 144
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 108, col 6 to line 108, col 11 of module actor_identity: 108
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 108, col 20 to line 108, col 23 of module actor_identity: 108
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 109, col 6 to line 109, col 23 of module actor_identity: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 109, col 6 to line 109, col 11 of module actor_identity: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 109, col 17 to line 109, col 23 of module actor_identity: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 110, col 6 to line 110, col 19 of module actor_identity: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 110, col 6 to line 110, col 15 of module actor_identity: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 111, col 6 to line 111, col 33 of module actor_identity: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 112, col 6 to line 112, col 20 of module actor_identity: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 6 to line 115, col 46 of module actor_identity: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<Done line 117, col 1 to line 117, col 4 of module actor_identity>: 0:18
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 118, col 6 to line 118, col 19 of module actor_identity: 70
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 118, col 6 to line 118, col 10 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 6 to line 119, col 23 of module actor_identity: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<UniqueIds line 138, col 1 to line 138, col 9 of module actor_identity>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 139, col 3 to line 140, col 40 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 140, col 5 to line 140, col 40 of module actor_identity: 405
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 140, col 5 to line 140, col 9 of module actor_identity: 405
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 140, col 14 to line 140, col 40 of module actor_identity: 264
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 139, col 15 to line 139, col 21 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<NoZeroId line 143, col 1 to line 143, col 8 of module actor_identity>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 144, col 3 to line 144, col 37 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 144, col 22 to line 144, col 37 of module actor_identity: 141
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 144, col 12 to line 144, col 18 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<MonotoneCounter line 147, col 1 to line 147, col 15 of module actor_identity>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 148, col 3 to line 148, col 43 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 148, col 22 to line 148, col 43 of module actor_identity: 141
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 148, col 12 to line 148, col 18 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<DeadActorsUnchanged line 151, col 1 to line 151, col 19 of module actor_identity>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 152, col 3 to line 154, col 28 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 153, col 5 to line 154, col 28 of module actor_identity: 156
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 153, col 5 to line 153, col 37 of module actor_identity: 156
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 153, col 5 to line 153, col 17 of module actor_identity: 156
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 153, col 22 to line 153, col 37 of module actor_identity: 51
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 154, col 7 to line 154, col 28 of module actor_identity: 15
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 152, col 12 to line 152, col 20 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<DeadSendsNonNeg line 157, col 1 to line 157, col 15 of module actor_identity>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 158, col 3 to line 158, col 17 of module actor_identity: 52
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2778:0 @!@!@
+<Bound line 161, col 1 to line 161, col 5 of module actor_identity>: 88:88
+@!@!@ENDMSG 2778 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 162, col 3 to line 164, col 21 of module actor_identity: 88
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(6) at 2026-03-14 08:21:36: 88 states generated (7,521 s/min), 52 distinct states found (4,444 ds/min), 0 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2199:0 @!@!@
+88 states generated, 52 distinct states found, 0 states left on queue.
+@!@!@ENDMSG 2199 @!@!@
+@!@!@STARTMSG 2194:0 @!@!@
+The depth of the complete state graph search is 6.
+@!@!@ENDMSG 2194 @!@!@
+@!@!@STARTMSG 2268:0 @!@!@
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 3 and the 95th percentile is 3).
+@!@!@ENDMSG 2268 @!@!@
+@!@!@STARTMSG 2186:0 @!@!@
+Finished in 704ms at (2026-03-14 08:21:36)
+@!@!@ENDMSG 2186 @!@!@
