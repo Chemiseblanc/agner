@@ -205,12 +205,13 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     void await_suspend(std::coroutine_handle<> handle) {
       actor_.pending_ = PendingReceive{handle, [this] { return try_match(); }};
       if constexpr (!std::is_same_v<TimeoutVisitor, std::nullptr_t>) {
-        active_ = true;
-        actor_.scheduler_.schedule_after(timeout_, [this, handle] {
-          if (!active_) {
+        auto active_flag = std::make_shared<bool>(true);
+        active_ = active_flag;
+        actor_.scheduler_.schedule_after(timeout_, [this, handle, active_flag]() mutable {
+          if (!*active_flag) {
             return;
           }
-          active_ = false;
+          if (active_) { *active_ = false; }
           timeout();
           actor_.pending_.reset();
           actor_.scheduler_.schedule(handle);
@@ -227,7 +228,7 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     bool try_match() {
       if (actor_.try_match_mailbox(storage_, visitors_)) {
         if constexpr (!std::is_same_v<TimeoutVisitor, std::nullptr_t>) {
-          active_ = false;
+          if (active_) { *active_ = false; }
         }
         return true;
       }
@@ -248,7 +249,7 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     TimeoutVisitor timeout_visitor_{};
     std::tuple<std::decay_t<Visitors>...> visitors_;
     typename ReceiveStorage<Result>::type storage_;
-    bool active_ = false;
+    std::shared_ptr<bool> active_{nullptr};
   };
 
   template <typename Storage, typename Tuple>

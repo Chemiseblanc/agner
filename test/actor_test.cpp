@@ -421,3 +421,28 @@ TEST(Actor, TryReceiveTimeoutCancelledWhenMessageArrives) {
   scheduler.run_for(agner::DeterministicScheduler::duration{10});
   EXPECT_FALSE(timed_out);
 }
+
+TEST(Actor, TimerDanglingPointer) {
+    int value = 0;
+    agner::DeterministicScheduler scheduler;
+
+    auto actor = scheduler.spawn<agner::test_support::TryReceiveSuccessT<agner::DeterministicScheduler>>(&value);
+    
+    // We send a message first. Wait, if we send it first, `try_receive` completes immediately via `await_ready` or `try_match`!
+    // But `await_suspend` is NEVER CALLED if `await_ready` is true! 
+    // And what if `try_match()` finds it BEFORE suspending? 
+    // Ah ha! `await_ready()` calls `try_match()`. If the message is already in the mailbox, `try_match()` returns true, and `await_suspend` is never called. Thus, no timer is ever scheduled!
+
+    // We must schedule the timer FIRST by running the coroutine when the mailbox is EMPTY.
+    scheduler.run_until_idle();
+
+    // Now the timer is scheduled. Let's send the message.
+    scheduler.send(actor, agner::test_support::Ping{42});
+
+    // Now it receives the message, setting `active_ = false` and finishing the coroutine
+    scheduler.run_until_idle();
+
+    // Now let's trigger the timeout callback explicitly to execute the UAF.
+    // We are guaranteed the frame is destroyed because the actor finished its run() task!
+    scheduler.run_for(std::chrono::milliseconds{100});
+}

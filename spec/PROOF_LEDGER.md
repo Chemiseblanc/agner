@@ -86,7 +86,7 @@ Based on a review of the implemented C++ features versus the current TLA+ models
    - Create `spec/abstractions/genserver/contract/cast_ordering/` for GenServer asynchronous semantics.
 2. **Phase 2: Core Timeout & Termination Models**
    - Create `spec/core/coordination/shutdown/graceful_shutdown/` for termination ordering and shutdown timeouts.
-   - Create `spec/core/timing/timers/timer_lifecycle/` to cover complex timer cancellation and actor exit races.
+   - [X] Create `spec/core/timing/timers/timer_lifecycle/` to cover complex timer cancellation and actor exit races. Found and fixed UAF bug in C++.
 3. **Phase 3: Advanced Systems Patterns**
    - Address multi-level supervision trees (`systems/supervision/tree_restart_cascades/`).
    - Address GenServer cascading handlers (`systems/events/handler_dependency_chains/`).
