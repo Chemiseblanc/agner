@@ -8,6 +8,7 @@ The top level is organized by dependency layers:
 
 - `core/` defines the actor-system guarantees that everything else depends on.
 - `implementation/` contains implementation-adjacent models that show concrete runtime machinery satisfies or preserves the core guarantees.
+- `refinement/` contains bridge specs that project implementation-level models onto abstract scheduler-visible views.
 - `abstractions/` contains higher-level runtime abstractions such as `genserver` and `supervisor`, built on top of the core layer.
 - `systems/` is reserved for future models built on the abstraction layer.
 - `shared/` contains the common vocabulary and actor runtime state machine used across all layers.
@@ -21,24 +22,32 @@ spec/
 ├── README.md
 ├── shared/
 │   ├── actor_defs.tla
-│   └── actor_system.tla
+│   ├── actor_system.tla
+│   └── refinement_vocabulary.tla
 ├── core/
 │   ├── contract/
+│   │   ├── api/
+│   │   │   └── invalid_actor_operations/
 │   │   └── messaging/
 │   │       └── missing_actor_send/
 │   ├── coordination/
 │   │   ├── core/
 │   │   │   └── core_system/
+│   │   ├── shutdown/
+│   │   │   └── graceful_shutdown/
 │   │   └── mailbox/
 │   │       ├── mailbox_ordering/
 │   │       └── receive_suspends/
 │   ├── failure/
 │   │   └── propagation/
 │   │       ├── exception_propagation/
-│   │       └── link_propagation/
+│   │       ├── link_propagation/
+│   │       └── spawn_registration/
 │   └── timing/
 │       ├── scheduler/
-│       │   └── scheduler_fairness/
+│       │   └── scheduler_progress/
+│       ├── timers/
+│       │   └── timer_lifecycle/
 │       └── timeouts/
 │           └── try_receive_race/
 ├── implementation/
@@ -48,34 +57,72 @@ spec/
 │   └── runtime/
 │       └── coroutines/
 │           └── coroutine_lifecycle/
+├── refinement/
+│   ├── actor_identity_core_projection/
+│   ├── identity_coroutine_core_projection/
+│   ├── message_delivery_core_projection/
+│   ├── scheduler_surface_step_correspondence/
+│   ├── scheduler_surface_core_projection/
+│   ├── topology_signal_core_projection/
+│   ├── timeout_delivery_core_projection/
+│   └── coroutine_core_projection/
 ├── abstractions/
 │   ├── genserver/
 │   │   └── contract/
-│   │       └── genserver_call/
+│   │       ├── cast_ordering/
+│   │       ├── genserver_call/
+│   │       └── serve_dispatch/
 │   └── supervisor/
+│       ├── contract/
+│       │   └── supervisor_admin/
 │       └── failure/
-│           └── supervisor_restart/
+│           ├── supervisor_one_for_all/
+│           ├── supervisor_rest_for_one/
+│           ├── supervisor_restart/
+│           └── supervisor_simple_one_for_one/
 └── systems/
+      └── supervision/
+            └── tree_restart_cascades/
 ```
 
-Each scenario folder contains symlinks back to `shared/actor_defs.tla` and `shared/actor_system.tla`. All scenario directories now live at the same depth, so the symlink rule is uniform.
+Each scenario folder contains symlinks back to `shared/actor_defs.tla` and `shared/actor_system.tla`. Refinement scenarios that use the shared projection helpers also symlink `shared/refinement_vocabulary.tla`. All scenario directories now live at the same depth, so the symlink rule remains uniform.
 
 ## Layer Ledger
 
 | Layer | Axis | Scenario | Primary question |
 |-------|------|----------|------------------|
+| Core | Contract | `core/contract/api/invalid_actor_operations` | Do missing-actor public API operations either no-op or reject without corrupting runtime state? |
 | Core | Contract | `core/contract/messaging/missing_actor_send` | Is sending to an absent actor a safe no-op? |
 | Core | Coordination | `core/coordination/core/core_system` | Do the core actor runtime invariants hold across broad interleavings? |
 | Core | Coordination | `core/coordination/mailbox/mailbox_ordering` | Does the mailbox preserve FIFO delivery? |
 | Core | Coordination | `core/coordination/mailbox/receive_suspends` | Does `receive()` suspend and resume correctly? |
+| Core | Coordination | `core/coordination/shutdown/graceful_shutdown` | Does supervisor-driven shutdown preserve child stop ordering and timeout discipline? |
 | Core | Failure | `core/failure/propagation/link_propagation` | Do links and monitors observe exits correctly? |
+| Core | Failure | `core/failure/propagation/spawn_registration` | Do `spawn_link()` and `spawn_monitor()` register topology before an immediate child exit can race past them? |
 | Core | Failure | `core/failure/propagation/exception_propagation` | Are exception exits propagated with the right reasons? |
-| Core | Timing | `core/timing/scheduler/scheduler_fairness` | Does the ready-queue model preserve FIFO fairness? |
+| Core | Timing | `core/timing/scheduler/scheduler_progress` | Does the scheduler contract stay abstract over ready-set dispatch and timeout eligibility without requiring a FIFO queue policy? |
+| Core | Timing | `core/timing/scheduler/README.md` | What scheduler-visible properties must any runtime preserve so the rest of the models remain valid? |
+| Core | Timing | `core/timing/timers/timer_lifecycle` | Do timer cancellation and actor-exit races preserve timer safety? |
 | Core | Timing | `core/timing/timeouts/try_receive_race` | Does `try_receive()` observe exactly one of message or timeout? |
 | Implementation | Representation | `implementation/representation/identity/actor_identity` | Do concrete actor identity allocation rules preserve the core safety story? |
 | Implementation | Runtime | `implementation/runtime/coroutines/coroutine_lifecycle` | Do coroutine state transitions preserve the runtime behavior assumed by the core specs? |
+| Refinement | Bridge | `refinement/actor_identity_core_projection` | Do actor identity allocation states admit a stable projection to coarse core-facing validity and stale-reference behavior? |
+| Refinement | Bridge | `refinement/identity_coroutine_core_projection` | Can identity allocation and coroutine lifecycle be composed into one stable coarse core-state projection? |
+| Refinement | Bridge | `refinement/message_delivery_core_projection` | Can a bounded implementation-style delivery path project to the core-facing mailbox, pending-result, observation, and message-state boundary? |
+| Refinement | Bridge | `refinement/scheduler_surface_step_correspondence` | Can bounded implementation-style scheduler steps interleave nondeterministically while maintaining an explicit step correspondence to `shared/actor_system.tla`? |
+| Refinement | Bridge | `refinement/scheduler_surface_core_projection` | Can a bounded implementation-style scheduler surface project to one coherent full core-state view? |
+| Refinement | Bridge | `refinement/topology_signal_core_projection` | Can bounded link and monitor cleanup on exit project to the core-facing topology and signal-observation boundary? |
+| Refinement | Bridge | `refinement/timeout_delivery_core_projection` | Can a bounded implementation-style timer arming and timeout-delivery path project to the core-facing try-receive boundary? |
+| Refinement | Bridge | `refinement/coroutine_core_projection` | Do root coroutine lifecycle states admit a stable projection to a coarse core-facing scheduler view? |
+| Abstractions | Contract | `abstractions/genserver/contract/cast_ordering` | Do GenServer casts preserve fire-and-forget enqueue order? |
 | Abstractions | Contract | `abstractions/genserver/contract/genserver_call` | Does the GenServer call/reply abstraction preserve request correlation and timeout behavior? |
-| Abstractions | Failure | `abstractions/supervisor/failure/supervisor_restart` | Does supervisor restart policy behave correctly on top of the core runtime semantics? |
+| Abstractions | Contract | `abstractions/genserver/contract/serve_dispatch` | Does `serve()` ignore reply and down messages while stopping on exit signals? |
+| Abstractions | Contract | `abstractions/supervisor/contract/supervisor_admin` | Do supervisor administrative operations preserve registry and child-reference semantics? |
+| Abstractions | Failure | `abstractions/supervisor/failure/supervisor_restart` | Does one-for-one supervisor restart policy behave correctly on top of the core runtime semantics? |
+| Abstractions | Failure | `abstractions/supervisor/failure/supervisor_one_for_all` | Does one-for-all restart stop and replace the full active child set correctly? |
+| Abstractions | Failure | `abstractions/supervisor/failure/supervisor_rest_for_one` | Does rest-for-one restart stop and replace only later-started children? |
+| Abstractions | Failure | `abstractions/supervisor/failure/supervisor_simple_one_for_one` | Do dynamically started children in simple-one-for-one restart according to the shared policy? |
+| Systems | Supervision | `systems/supervision/tree_restart_cascades` | Do restart cascades across multi-level supervision trees preserve the intended recovery envelope? |
 
 ## Dependency Story
 
@@ -88,6 +135,8 @@ shared/actor_system.tla
       ├── core/*
       │
       ├── implementation/*   (evidence that concrete runtime choices preserve core guarantees)
+      │
+      ├── refinement/*       (bridge specs that project implementation views toward core-facing state)
       │
       ├── abstractions/*     (GenServer, Supervisor, and similar higher-level constructs)
       │
@@ -127,13 +176,29 @@ java -jar tla2tools.jar -modelcheck -config <scenario>.cfg <scenario>.tla
 | Spec Concept | C++ Implementation |
 |--------------|-------------------|
 | `Spawn(a, kind)` | `SchedulerBase::spawn_impl()` |
+| `SpawnLink(linker, a, kind)` | `SchedulerBase::spawn_link()` / `spawn_impl()` |
+| `SpawnMonitor(watcher, a, kind)` | `SchedulerBase::spawn_monitor()` / `spawn_impl()` |
 | `Send(target, msg)` | `SchedulerBase::send()`, `Actor::enqueue_message()` |
 | `RunReadyActor(a)` | `SchedulerBase::run_actor()` |
 | `ready` set | Actors with runnable coroutine handles |
 | `pending_result` | Direct delivery via waiter notification |
 | `timers` | `Scheduler::schedule_after()` deadlines |
-| `AdvanceTime` | Deterministic scheduler logical time advancement |
+| `AdvanceTime` | Scheduler-visible logical time advancement to due deadlines |
 | `links` / `monitors` | `SchedulerBase::link()` / `SchedulerBase::monitor()` |
+
+## Scheduler Properties
+
+The proof story relies on a small abstract scheduler contract, recorded in `core/timing/scheduler/README.md`:
+
+- running steps choose from the current `ready` set
+- matching delivery wakes blocked actors and cancels blocked `try_receive()` timers
+- logical time can advance to the next deadline without requiring the runnable set to drain first
+- due timeouts can compete with other runnable actors
+- the timeout boundary exposes exactly one of matching message or timeout token
+
+The proof story does not require FIFO ready order, a single ready queue, a single-threaded scheduler, or a fairness guarantee unless a scenario states that explicitly.
+
+At the refinement layer, scheduler-adjacent bridges now share one reusable ready-surface vocabulary in `shared/refinement_vocabulary.tla`: `ReadyMembers`, `ReadyAdd`, and `ReadyRemove`. The current witness is still queue-backed, but bridge obligations are phrased in terms of ready-set projection and ready add/remove effects rather than raw queue mutation.
 
 ## Core Invariants
 
@@ -159,6 +224,10 @@ The core, implementation, and abstraction layers rely on the shared runtime inva
       ln -s ../../../../shared/actor_defs.tla .
       ln -s ../../../../shared/actor_system.tla .
    ```
+      For refinement scenarios that use the shared projection helpers, also add:
+      ```bash
+            ln -s ../../../../shared/refinement_vocabulary.tla .
+      ```
 5. Create `<scenario_name>.tla` extending `actor_system` or, if needed, only `actor_defs`.
 6. Create `<scenario_name>.cfg` with the smallest constants that still exercise the property.
 7. Add a short `README.md` that states the property, the scenario, and why that dependency layer and abstraction axis are the right place for it.

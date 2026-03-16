@@ -4,3 +4,4 @@ This axis of the core layer captures crash handling and exit propagation semanti
 
 - `propagation/link_propagation` checks link and monitor notifications.
 - `propagation/exception_propagation` checks error exit propagation.
+- `propagation/spawn_registration` checks spawn-time registration before immediate child exit.
