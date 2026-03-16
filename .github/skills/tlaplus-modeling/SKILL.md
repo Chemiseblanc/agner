@@ -1,15 +1,20 @@
 ---
 name: tlaplus-modeling
-description: 'Model and verify concurrent systems with TLA+ and PlusCal. Use when: writing TLA+ specs, creating PlusCal algorithms, model checking with TLC, organizing multi-module specifications, debugging verification failures, translating designs to formal models, reducing state space. Covers MCP tool usage, PlusCal preferred syntax (call/await over goto), module organization, and state-space optimization.'
-argument-hint: 'Describe what you want to model or verify'
+description: 'Model and reason about concurrent or distributed systems with TLA+ and PlusCal. Use when: designing multithreaded or distributed behavior before code exists, deriving invariants from an informal design, writing TLA+ specs, creating PlusCal algorithms, model checking with TLC, organizing multi-module specifications, debugging verification failures, or reducing state space. Covers informal concurrency design, MCP tool usage, PlusCal preferred syntax (call/await over goto), TLA+ module organization, and state-space optimization.'
+argument-hint: 'Describe the concurrent design, spec, or verification question'
 ---
 
 # TLA+ Modeling and Verification
 
-Formal specification and verification of concurrent/distributed systems using TLA+ and PlusCal.
+Use this skill for concurrency-oriented design and verification with TLA+ and PlusCal.
+
+It is valid to use this skill before a formal spec exists. A good outcome can be an informal design review, a candidate state-machine sketch, a set of invariants, or a PlusCal outline that clarifies the system before you commit to a full specification.
 
 ## When to Use
 
+- Planning a concurrent or distributed design before writing the spec
+- Identifying processes, shared state, messages, failure modes, and fairness assumptions
+- Deriving candidate invariants and progress claims from an informal design
 - Writing new TLA+ specifications from system designs
 - Translating code/pseudocode to PlusCal algorithms  
 - Model checking specifications with TLC
@@ -17,6 +22,28 @@ Formal specification and verification of concurrent/distributed systems using TL
 - Organizing related specifications that share definitions
 - Understanding counterexamples from TLC
 - Optimizing state space for faster verification
+
+If the main question is whether TLA+ is the right formalism, step back and choose the method based on the dominant verification risk: temporal behavior, relational structure, protocol-state interaction, or implementation-level proof.
+
+## Design Before the Spec
+
+When there is no spec yet, start by naming the behavioral pieces that TLA+ will eventually need.
+
+Extract:
+
+- processes, actors, or roles
+- shared variables and ownership boundaries
+- message kinds or externally visible actions
+- blocking conditions and wake-up conditions
+- failure modes, retries, and timeout paths
+- safety invariants and liveness expectations
+
+Then decide whether the next artifact should be:
+
+- a plain-language state machine,
+- a PlusCal algorithm,
+- a small TLA+ state transition system,
+- or just a list of properties to preserve while the design is still moving.
 
 ## Tooling
 
@@ -158,9 +185,7 @@ end algorithm; *)
 
 ## Module Organization
 
-For related models that share definitions, use a **shared library module** pattern:
-
-For larger programs, prefer a **family of focused models at different abstraction levels** over one giant specification. Decompose the system into protocol, coordination, failure, timing, and implementation-adjacent models, and tie them together with explicit properties and state projections.
+For related TLA+ models that share definitions, use a shared library module pattern and keep each scenario focused on one verification question.
 
 ```
 spec/
@@ -350,7 +375,6 @@ When a model does not finish quickly, first ask which variables can grow without
 
 ## References
 
-- [Model Decomposition](./references/model-decomposition.md) — How to break one program into a linked family of models
 - [State Space Optimization](./references/state-space.md) — Techniques for smaller models
 - [PlusCal Idioms](./references/pluscal-idioms.md) — Common patterns and recipes
 - [TLA+ Tools Documentation](https://lamport.azurewebsites.net/tla/tools.html)

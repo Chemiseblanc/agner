@@ -8,6 +8,7 @@
 - C++20 header-only actor framework.
 - Public headers live in `include/agner`.
 - Tests live in `test` and use GoogleTest.
+- Formal specs and proof-planning artifacts live in `spec`.
 - Build system uses CMake with presets.
 
 ## Build Commands
@@ -111,3 +112,10 @@
 - Keep changes minimal and focused.
 - Update tests if behavior changes.
 - Do not introduce new third-party dependencies without approval.
+
+## Formal Verification
+- The verification corpus lives under `spec`.
+- Start with `spec/README.md` for the top-level layout and `spec/PROOF_LEDGER.md` for the verification story and evidence tracking.
+- Specs are organized by layer (`shared`, `core`, `implementation`, `refinement`, `abstractions`, `systems`); keep new work in the narrowest layer that matches the claim being checked.
+- Use the `formal-verification` skill to make sure the the implementation and spec stay in sync, and that the spec stays correct.
+- For TLA+ modeling under `spec`, pair that workflow with the `tlaplus-modeling` skill.
