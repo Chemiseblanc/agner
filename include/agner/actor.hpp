@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <deque>
 #include <functional>
+#include <mutex>
 #include <optional>
 #include <tuple>
 #include <type_traits>
@@ -22,6 +23,7 @@
 #include "agner/actor_concepts.hpp"
 #include "agner/actor_control.hpp"
 #include "agner/detail/actor_detail.hpp"
+#include "agner/detail/scheduler_traits.hpp"
 #include "agner/scheduler.hpp"
 #include "agner/scheduler_concept.hpp"
 
@@ -62,6 +64,9 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
  public:
   /// Variant type holding any receivable message including signals.
   using message_variant = std::variant<MessageTypes..., ExitSignal, DownSignal>;
+
+  /// Mutex type: std::mutex for concurrent schedulers, null_mutex otherwise.
+  using actor_mutex_type = detail::scheduler_mutex_t<SchedulerType>;
 
   /// @brief Construct an actor bound to a scheduler.
   explicit Actor(SchedulerType& scheduler) : scheduler_(scheduler) {}
@@ -158,8 +163,16 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
   /// @brief Request the actor to stop.
   /// @param reason The exit reason to set.
   void stop(ExitReason reason = {}) override {
-    exit_reason_ = reason;
-    enqueue_message(ExitSignal{self(), reason});
+    std::coroutine_handle<> to_schedule{};
+    {
+      std::lock_guard<actor_mutex_type> lock(actor_mutex_);
+      exit_reason_ = reason;
+      mailbox_.emplace_back(ExitSignal{self(), reason});
+      to_schedule = notify_waiter_locked();
+    }
+    if (to_schedule) {
+      scheduler_.schedule(to_schedule);
+    }
   }
 
   /// @brief Get the actor's exit reason.
@@ -200,20 +213,29 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
           visitors_(std::forward<Visitors>(visitors)...),
           storage_(ReceiveStorage<Result>::make()) {}
 
-    bool await_ready() { return try_match(); }
+    bool await_ready() {
+      std::lock_guard<actor_mutex_type> lock(actor_.actor_mutex_);
+      return try_match();
+    }
 
     void await_suspend(std::coroutine_handle<> handle) {
-      actor_.pending_ = PendingReceive{handle, [this] { return try_match(); }};
+      {
+        std::lock_guard<actor_mutex_type> lock(actor_.actor_mutex_);
+        actor_.pending_ = PendingReceive{handle, [this] { return try_match(); }};
+      }
       if constexpr (!std::is_same_v<TimeoutVisitor, std::nullptr_t>) {
-        auto active_flag = std::make_shared<bool>(true);
+        auto active_flag = std::make_shared<std::atomic<bool>>(true);
         active_ = active_flag;
         actor_.scheduler_.schedule_after(timeout_, [this, handle, active_flag]() mutable {
-          if (!*active_flag) {
+          if (!active_flag->load(std::memory_order_acquire)) {
             return;
           }
-          if (active_) { *active_ = false; }
+          active_flag->store(false, std::memory_order_release);
           timeout();
-          actor_.pending_.reset();
+          {
+            std::lock_guard<actor_mutex_type> lock(actor_.actor_mutex_);
+            actor_.pending_.reset();
+          }
           actor_.scheduler_.schedule(handle);
         });
       }
@@ -225,10 +247,14 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
       }
     }
 
+    /// @brief Try to match a mailbox message against the visitors.
+    /// Caller must hold actor_mutex_.
     bool try_match() {
       if (actor_.try_match_mailbox(storage_, visitors_)) {
         if constexpr (!std::is_same_v<TimeoutVisitor, std::nullptr_t>) {
-          if (active_) { *active_ = false; }
+          if (active_) {
+            active_->store(false, std::memory_order_release);
+          }
         }
         return true;
       }
@@ -249,7 +275,7 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     TimeoutVisitor timeout_visitor_{};
     std::tuple<std::decay_t<Visitors>...> visitors_;
     typename ReceiveStorage<Result>::type storage_;
-    std::shared_ptr<bool> active_{nullptr};
+    std::shared_ptr<std::atomic<bool>> active_{nullptr};
   };
 
   template <typename Storage, typename Tuple>
@@ -270,30 +296,50 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     return true;
   }
 
-  void notify_waiter() {
+  /// @brief Returns a coroutine handle to schedule, or null.
+  /// Caller must hold actor_mutex_.
+  std::coroutine_handle<> notify_waiter_locked() {
     if (!pending_) {
-      return;
+      return {};
     }
     auto pending = pending_;
     pending_.reset();
     if (pending->try_match()) {
-      auto handle = pending->handle;
-      scheduler_.schedule(handle);
-      return;
+      return pending->handle;
     }
     pending_ = std::move(pending);
+    return {};
+  }
+
+  void notify_waiter() {
+    std::coroutine_handle<> to_schedule{};
+    {
+      std::lock_guard<actor_mutex_type> lock(actor_mutex_);
+      to_schedule = notify_waiter_locked();
+    }
+    if (to_schedule) {
+      scheduler_.schedule(to_schedule);
+    }
   }
 
   template <typename Message>
   void enqueue_message(Message&& message) {
-    mailbox_.emplace_back(std::forward<Message>(message));
-    notify_waiter();
+    std::coroutine_handle<> to_schedule{};
+    {
+      std::lock_guard<actor_mutex_type> lock(actor_mutex_);
+      mailbox_.emplace_back(std::forward<Message>(message));
+      to_schedule = notify_waiter_locked();
+    }
+    if (to_schedule) {
+      scheduler_.schedule(to_schedule);
+    }
   }
 
   SchedulerType& scheduler_;
   std::deque<message_variant> mailbox_;
   std::optional<PendingReceive> pending_;
   std::optional<ExitReason> exit_reason_;
+  mutable actor_mutex_type actor_mutex_;
 };
 
 }  // namespace agner
