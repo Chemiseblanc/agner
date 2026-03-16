@@ -9,7 +9,7 @@
 (* - SchedulerBase::send() and Actor::enqueue_message() -> Send            *)
 (* - Actor::receive(), try_receive(), notify_waiter() -> Run* actions,     *)
 (*   ready-set updates, pending_result, and timers                         *)
-(* - Scheduler::schedule_after() plus deterministic logical time ->        *)
+(* - Scheduler::schedule_after() plus scheduler-visible logical time ->    *)
 (*   timers, AdvanceTime, and TimeoutFire                                  *)
 (* - SchedulerBase::link() -> Link, links variable                         *)
 (* - SchedulerBase::monitor() -> Monitor, monitors variable                *)
@@ -494,7 +494,6 @@ RunReadyActor(a) ==
   \/ RunTimeout(a)
 
 AdvanceTime ==
-  /\ ready = {}
   /\ ActiveTimers # {}
   /\ time < MinNat(ActiveTimers)
   /\ live' = live

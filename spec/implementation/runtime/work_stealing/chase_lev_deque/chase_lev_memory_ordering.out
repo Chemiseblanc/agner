@@ -1,0 +1,1150 @@
+@!@!@STARTMSG 2262:0 @!@!@
+TLC2 Version 2026.03.12.220102 (rev: 0a0bffb)
+@!@!@ENDMSG 2262 @!@!@
+@!@!@STARTMSG 2187:0 @!@!@
+Running breadth-first search Model-Checking with fp 12 and seed 284977263867185770 with 1 worker on 20 cores with 7115MB heap and 64MB offheap memory [pid: 172547] (Linux 6.6.87.2-microsoft-standard-WSL2 amd64, Arch Linux 25.0.2 64bit, MSBDiskFPSet, DiskStateQueue).
+@!@!@ENDMSG 2187 @!@!@
+@!@!@STARTMSG 2220:0 @!@!@
+Starting SANY...
+@!@!@ENDMSG 2220 @!@!@
+Parsing file /home/matt/proj/agner/spec/implementation/runtime/work_stealing/chase_lev_deque/chase_lev_memory_ordering.tla
+Parsing file /tmp/tlc-7587240301874275877/Naturals.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.122209/tools/tla2tools.jar!/tla2sany/StandardModules/Naturals.tla)
+Parsing file /tmp/tlc-7587240301874275877/Sequences.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.122209/tools/tla2tools.jar!/tla2sany/StandardModules/Sequences.tla)
+Parsing file /tmp/tlc-7587240301874275877/FiniteSets.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.122209/tools/tla2tools.jar!/tla2sany/StandardModules/FiniteSets.tla)
+Parsing file /tmp/tlc-7587240301874275877/TLC.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.122209/tools/tla2tools.jar!/tla2sany/StandardModules/TLC.tla)
+Parsing file /tmp/tlc-7587240301874275877/_TLCTrace.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.122209/tools/tla2tools.jar!/tla2sany/StandardModules/_TLCTrace.tla)
+Parsing file /tmp/tlc-7587240301874275877/TLCExt.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.122209/tools/tla2tools.jar!/tla2sany/StandardModules/TLCExt.tla)
+Parsing file /tmp/tlc-7587240301874275877/Integers.tla (jar:file:/home/matt/.vscode-server-insiders/extensions/tlaplus.vscode-ide-2026.3.122209/tools/tla2tools.jar!/tla2sany/StandardModules/Integers.tla)
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module TLC
+Semantic processing of module Integers
+Semantic processing of module TLCExt
+Semantic processing of module _TLCTrace
+Semantic processing of module chase_lev_memory_ordering
+Linting of module TLCExt
+Linting of module _TLCTrace
+Linting of module chase_lev_memory_ordering
+@!@!@STARTMSG 2219:0 @!@!@
+SANY finished.
+@!@!@ENDMSG 2219 @!@!@
+@!@!@STARTMSG 2185:0 @!@!@
+Starting... (2026-03-14 19:41:04)
+@!@!@ENDMSG 2185 @!@!@
+@!@!@STARTMSG 2189:0 @!@!@
+Computing initial states...
+@!@!@ENDMSG 2189 @!@!@
+@!@!@STARTMSG 2190:0 @!@!@
+Finished computing initial states: 1 distinct state generated at 2026-03-14 19:41:04.
+@!@!@ENDMSG 2190 @!@!@
+@!@!@STARTMSG 2193:0 @!@!@
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.1E-13
+@!@!@ENDMSG 2193 @!@!@
+@!@!@STARTMSG 2201:0 @!@!@
+The coverage statistics at 2026-03-14 19:41:04 (see https://explain.tlapl.us/module-coverage-statistics for how to interpret the following statistics).
+@!@!@ENDMSG 2201 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<pending_push_item line 46, col 11 to line 46, col 27 of module chase_lev_memory_ordering>: 4
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<active_buffer line 45, col 11 to line 45, col 23 of module chase_lev_memory_ordering>: 2
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<slots line 45, col 43 to line 45, col 47 of module chase_lev_memory_ordering>: 47
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<published_bottom line 44, col 35 to line 44, col 50 of module chase_lev_memory_ordering>: 4
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<last_action line 48, col 11 to line 48, col 21 of module chase_lev_memory_ordering>: 12
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<top line 44, col 30 to line 44, col 32 of module chase_lev_memory_ordering>: 4
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<available line 47, col 11 to line 47, col 19 of module chase_lev_memory_ordering>: 8
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<prepared_buffer line 45, col 26 to line 45, col 40 of module chase_lev_memory_ordering>: 2
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<stolen line 47, col 30 to line 47, col 35 of module chase_lev_memory_ordering>: 8
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<last_result line 48, col 24 to line 48, col 34 of module chase_lev_memory_ordering>: 4
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<capacity line 44, col 20 to line 44, col 27 of module chase_lev_memory_ordering>: 2
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<popped line 47, col 22 to line 47, col 27 of module chase_lev_memory_ordering>: 8
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<logical line 44, col 11 to line 44, col 17 of module chase_lev_memory_ordering>: 16
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2779:0 @!@!@
+<pending_push_index line 46, col 30 to line 46, col 47 of module chase_lev_memory_ordering>: 3
+@!@!@ENDMSG 2779 @!@!@
+@!@!@STARTMSG 2773:0 @!@!@
+<Init line 83, col 1 to line 83, col 4 of module chase_lev_memory_ordering>: 1:1
+@!@!@ENDMSG 2773 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 84, col 6 to line 84, col 19 of module chase_lev_memory_ordering: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 85, col 6 to line 85, col 28 of module chase_lev_memory_ordering: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 89, col 6 to line 89, col 31 of module chase_lev_memory_ordering: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 90, col 14 to line 90, col 45 of module chase_lev_memory_ordering: 1:2
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 90, col 35 to line 90, col 44 of module chase_lev_memory_ordering: 2
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 90, col 23 to line 90, col 29 of module chase_lev_memory_ordering: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 91, col 6 to line 91, col 31 of module chase_lev_memory_ordering: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 93, col 6 to line 93, col 22 of module chase_lev_memory_ordering: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 94, col 6 to line 94, col 16 of module chase_lev_memory_ordering: 1:498
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  line 95, col 6 to line 95, col 16 of module chase_lev_memory_ordering: 1:1575
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 97, col 6 to line 97, col 27 of module chase_lev_memory_ordering: 1
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<PushPublish line 116, col 1 to line 116, col 11 of module chase_lev_memory_ordering>: 90:90
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 117, col 6 to line 117, col 31 of module chase_lev_memory_ordering: 1281
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 117, col 6 to line 117, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 117, col 26 to line 117, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 118, col 6 to line 118, col 50 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 119, col 6 to line 119, col 45 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 120, col 6 to line 120, col 49 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 121, col 6 to line 121, col 32 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 122, col 6 to line 122, col 28 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 123, col 6 to line 124, col 40 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 125, col 6 to line 125, col 34 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 126, col 6 to line 126, col 28 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<GrowPrepare line 128, col 1 to line 128, col 11 of module chase_lev_memory_ordering>: 18:18
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 1209
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1119
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 130, col 6 to line 130, col 28 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 130, col 6 to line 130, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 130, col 21 to line 130, col 28 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 131, col 6 to line 131, col 27 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 132, col 6 to line 132, col 50 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 133, col 6 to line 133, col 74 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 133, col 15 to line 133, col 74 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 133, col 16 to line 133, col 20 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 133, col 29 to line 133, col 73 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 133, col 61 to line 133, col 73 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  |||line 78, col 3 to line 81, col 18 of module chase_lev_memory_ordering: 18:72
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 79, col 5 to line 81, col 17 of module chase_lev_memory_ordering: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 79, col 8 to line 79, col 29 of module chase_lev_memory_ordering: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 80, col 12 to line 80, col 37 of module chase_lev_memory_ordering: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 81, col 12 to line 81, col 17 of module chase_lev_memory_ordering: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 78, col 12 to line 78, col 22 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 134, col 6 to line 136, col 44 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 137, col 6 to line 137, col 34 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 138, col 6 to line 138, col 28 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<GrowPublish line 140, col 1 to line 140, col 11 of module chase_lev_memory_ordering>: 18:18
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 141, col 6 to line 141, col 31 of module chase_lev_memory_ordering: 1209
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 141, col 6 to line 141, col 20 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 141, col 24 to line 141, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 142, col 6 to line 142, col 37 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 143, col 6 to line 143, col 29 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 144, col 6 to line 144, col 32 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 145, col 6 to line 147, col 44 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 148, col 6 to line 148, col 34 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 149, col 6 to line 149, col 28 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<PopEmpty line 151, col 1 to line 151, col 8 of module chase_lev_memory_ordering>: 187:855
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 2046
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1956
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 153, col 6 to line 153, col 21 of module chase_lev_memory_ordering: 1938
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 153, col 6 to line 153, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 154, col 6 to line 157, col 44 of module chase_lev_memory_ordering: 855
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 158, col 6 to line 158, col 31 of module chase_lev_memory_ordering: 855
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 159, col 6 to line 159, col 28 of module chase_lev_memory_ordering: 855
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<StealEmpty line 161, col 1 to line 161, col 10 of module chase_lev_memory_ordering>: 187:855
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 2046
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1956
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 163, col 6 to line 163, col 21 of module chase_lev_memory_ordering: 1938
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 163, col 6 to line 163, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 164, col 6 to line 167, col 44 of module chase_lev_memory_ordering: 855
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 168, col 6 to line 168, col 33 of module chase_lev_memory_ordering: 855
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 169, col 6 to line 169, col 28 of module chase_lev_memory_ordering: 855
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<PopMany line 171, col 1 to line 171, col 7 of module chase_lev_memory_ordering>: 60:66
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 1257
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1167
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 173, col 6 to line 173, col 22 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 173, col 6 to line 173, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 175, col 11 to line 175, col 57 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 176, col 11 to line 176, col 50 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 177, col 11 to line 177, col 38 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 177, col 21 to line 177, col 38 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 177, col 21 to line 177, col 26 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 177, col 33 to line 177, col 38 of module chase_lev_memory_ordering: 66:864
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 177, col 34 to line 177, col 37 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 178, col 11 to line 180, col 41 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 181, col 11 to line 181, col 30 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 182, col 11 to line 182, col 29 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<StealMany line 184, col 1 to line 184, col 9 of module chase_lev_memory_ordering>: 60:66
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 1257
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1167
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 186, col 6 to line 186, col 22 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 186, col 6 to line 186, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 188, col 11 to line 188, col 53 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 189, col 11 to line 189, col 24 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 190, col 11 to line 190, col 38 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 190, col 21 to line 190, col 38 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 190, col 21 to line 190, col 26 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 190, col 33 to line 190, col 38 of module chase_lev_memory_ordering: 66:1752
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 190, col 34 to line 190, col 37 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 191, col 11 to line 194, col 41 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 195, col 11 to line 195, col 32 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 196, col 11 to line 196, col 29 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<PopLastOwnerWins line 198, col 1 to line 198, col 16 of module chase_lev_memory_ordering>: 120:162
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 1353
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1263
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 200, col 6 to line 200, col 21 of module chase_lev_memory_ordering: 1245
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 200, col 6 to line 200, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 202, col 11 to line 202, col 25 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 203, col 11 to line 203, col 33 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 204, col 11 to line 204, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 204, col 21 to line 204, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 204, col 21 to line 204, col 26 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 204, col 33 to line 204, col 38 of module chase_lev_memory_ordering: 162:630
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 204, col 34 to line 204, col 37 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 205, col 11 to line 207, col 41 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 208, col 11 to line 208, col 41 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 209, col 11 to line 209, col 29 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<PopLastLosesToSteal line 211, col 1 to line 211, col 19 of module chase_lev_memory_ordering>: 120:162
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 1353
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1263
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 213, col 6 to line 213, col 21 of module chase_lev_memory_ordering: 1245
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 213, col 6 to line 213, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 215, col 11 to line 215, col 25 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 216, col 11 to line 216, col 24 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 217, col 11 to line 217, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 217, col 21 to line 217, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 217, col 21 to line 217, col 26 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 217, col 33 to line 217, col 38 of module chase_lev_memory_ordering: 162:1830
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 217, col 34 to line 217, col 37 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 218, col 11 to line 221, col 41 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 222, col 11 to line 222, col 40 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 223, col 11 to line 223, col 33 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<StealLastWins line 225, col 1 to line 225, col 13 of module chase_lev_memory_ordering>: 120:162
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 1353
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1263
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 227, col 6 to line 227, col 21 of module chase_lev_memory_ordering: 1245
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 227, col 6 to line 227, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 229, col 11 to line 229, col 25 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 230, col 11 to line 230, col 24 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 231, col 11 to line 231, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 231, col 21 to line 231, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 231, col 21 to line 231, col 26 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 231, col 33 to line 231, col 38 of module chase_lev_memory_ordering: 162:726
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 231, col 34 to line 231, col 37 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 232, col 11 to line 235, col 41 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 236, col 11 to line 236, col 43 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 237, col 11 to line 237, col 29 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<StealLastLosesToPop line 239, col 1 to line 239, col 19 of module chase_lev_memory_ordering>: 120:162
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 1353
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 1263
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 1101
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 241, col 6 to line 241, col 21 of module chase_lev_memory_ordering: 1245
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 241, col 6 to line 241, col 17 of module chase_lev_memory_ordering: 1083
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 243, col 11 to line 243, col 25 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 244, col 11 to line 244, col 33 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 245, col 11 to line 245, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 245, col 21 to line 245, col 38 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 245, col 21 to line 245, col 26 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||line 245, col 33 to line 245, col 38 of module chase_lev_memory_ordering: 162:318
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 245, col 34 to line 245, col 37 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 246, col 11 to line 248, col 41 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 249, col 11 to line 249, col 42 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 250, col 11 to line 250, col 33 of module chase_lev_memory_ordering: 162
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2772:0 @!@!@
+<Next line 252, col 1 to line 252, col 4 of module chase_lev_memory_ordering (253 6 253 44)>: 90:321
+@!@!@ENDMSG 2772 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 100, col 6 to line 100, col 31 of module chase_lev_memory_ordering: 768
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 6 to line 100, col 22 of module chase_lev_memory_ordering: 447
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 100, col 26 to line 100, col 31 of module chase_lev_memory_ordering: 447
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 101, col 6 to line 101, col 31 of module chase_lev_memory_ordering: 654
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 6 to line 101, col 20 of module chase_lev_memory_ordering: 333
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 101, col 24 to line 101, col 31 of module chase_lev_memory_ordering: 333
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 105, col 6 to line 105, col 23 of module chase_lev_memory_ordering: 648
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 105, col 6 to line 105, col 9 of module chase_lev_memory_ordering: 327
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 105, col 15 to line 105, col 23 of module chase_lev_memory_ordering: 327
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 106, col 6 to line 106, col 28 of module chase_lev_memory_ordering: 321
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 106, col 6 to line 106, col 17 of module chase_lev_memory_ordering: 327
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 106, col 21 to line 106, col 28 of module chase_lev_memory_ordering: 327
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 107, col 6 to line 107, col 70 of module chase_lev_memory_ordering: 321
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 108, col 6 to line 108, col 30 of module chase_lev_memory_ordering: 321
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 109, col 6 to line 109, col 43 of module chase_lev_memory_ordering: 321
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 110, col 6 to line 112, col 44 of module chase_lev_memory_ordering: 321
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 113, col 6 to line 113, col 32 of module chase_lev_memory_ordering: 321
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 114, col 6 to line 114, col 28 of module chase_lev_memory_ordering: 321
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 253, col 40 to line 253, col 43 of module chase_lev_memory_ordering: 327
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 253, col 18 to line 253, col 26 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<TypeOK line 269, col 1 to line 269, col 6 of module chase_lev_memory_ordering>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 270, col 3 to line 283, col 42 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 270, col 6 to line 270, col 27 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 271, col 6 to line 271, col 45 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 272, col 6 to line 272, col 27 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 273, col 6 to line 273, col 40 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 274, col 6 to line 274, col 30 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 275, col 6 to line 275, col 48 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 275, col 6 to line 275, col 20 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 275, col 26 to line 275, col 48 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 275, col 26 to line 275, col 32 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  |||line 275, col 39 to line 275, col 48 of module chase_lev_memory_ordering: 1191:2382
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 275, col 40 to line 275, col 47 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 276, col 6 to line 276, col 64 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 276, col 6 to line 276, col 10 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 276, col 16 to line 276, col 64 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 276, col 17 to line 276, col 23 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 276, col 28 to line 276, col 63 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 276, col 29 to line 276, col 39 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 276, col 44 to line 276, col 62 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 276, col 44 to line 276, col 48 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  |||||line 276, col 55 to line 276, col 62 of module chase_lev_memory_ordering: 1191:2382
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||||line 276, col 56 to line 276, col 61 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 277, col 6 to line 277, col 46 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 277, col 6 to line 277, col 22 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 277, col 28 to line 277, col 46 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 277, col 28 to line 277, col 32 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  |||line 277, col 39 to line 277, col 46 of module chase_lev_memory_ordering: 1191:2382
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 277, col 40 to line 277, col 45 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 278, col 6 to line 278, col 42 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 279, col 6 to line 279, col 30 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 280, col 6 to line 280, col 27 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 281, col 6 to line 281, col 27 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 282, col 6 to line 282, col 32 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 283, col 6 to line 283, col 42 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 283, col 6 to line 283, col 16 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 283, col 22 to line 283, col 42 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 283, col 22 to line 283, col 26 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  |||line 283, col 33 to line 283, col 42 of module chase_lev_memory_ordering: 1191:2382
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 283, col 34 to line 283, col 41 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<PublishedBounds line 285, col 1 to line 285, col 15 of module chase_lev_memory_ordering>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 286, col 3 to line 288, col 29 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<ActiveBufferMatchesLogical line 290, col 1 to line 290, col 26 of module chase_lev_memory_ordering>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 291, col 3 to line 291, col 37 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 68, col 3 to line 71, col 65 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 68, col 6 to line 69, col 47 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 69, col 8 to line 69, col 47 of module chase_lev_memory_ordering: 378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 68, col 15 to line 68, col 29 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 70, col 6 to line 71, col 65 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 71, col 8 to line 71, col 65 of module chase_lev_memory_ordering: 4764
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 71, col 8 to line 71, col 57 of module chase_lev_memory_ordering: 4764
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 71, col 8 to line 71, col 43 of module chase_lev_memory_ordering: 4764
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||||line 71, col 8 to line 71, col 16 of module chase_lev_memory_ordering: 4764
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||||line 71, col 21 to line 71, col 43 of module chase_lev_memory_ordering: 3540
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 71, col 48 to line 71, col 57 of module chase_lev_memory_ordering: 378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 71, col 62 to line 71, col 65 of module chase_lev_memory_ordering: 4386
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 70, col 17 to line 70, col 27 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 291, col 24 to line 291, col 36 of module chase_lev_memory_ordering: 282
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<PendingPushWrittenButUnpublished line 293, col 1 to line 293, col 32 of module chase_lev_memory_ordering>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 294, col 3 to line 298, col 39 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 294, col 3 to line 294, col 28 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 295, col 5 to line 298, col 39 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 295, col 8 to line 295, col 44 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 296, col 8 to line 296, col 68 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 297, col 8 to line 297, col 47 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 297, col 8 to line 297, col 24 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 297, col 33 to line 297, col 47 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 57, col 16 to line 57, col 43 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 57, col 17 to line 57, col 22 of module chase_lev_memory_ordering: 42
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 57, col 32 to line 57, col 42 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 297, col 40 to line 297, col 46 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 298, col 8 to line 298, col 39 of module chase_lev_memory_ordering: 90
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<PreparedGrowthMatchesLogical line 300, col 1 to line 300, col 28 of module chase_lev_memory_ordering>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 301, col 3 to line 302, col 41 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 301, col 3 to line 301, col 28 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 302, col 5 to line 302, col 41 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 68, col 3 to line 71, col 65 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 68, col 6 to line 69, col 47 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 69, col 8 to line 69, col 47 of module chase_lev_memory_ordering: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 68, col 15 to line 68, col 29 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 70, col 6 to line 71, col 65 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 71, col 8 to line 71, col 65 of module chase_lev_memory_ordering: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 71, col 8 to line 71, col 57 of module chase_lev_memory_ordering: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||||line 71, col 8 to line 71, col 43 of module chase_lev_memory_ordering: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||||line 71, col 8 to line 71, col 16 of module chase_lev_memory_ordering: 72
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||||line 71, col 21 to line 71, col 43 of module chase_lev_memory_ordering: 66
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||||line 71, col 48 to line 71, col 57 of module chase_lev_memory_ordering: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 71, col 62 to line 71, col 65 of module chase_lev_memory_ordering: 36
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 70, col 17 to line 70, col 27 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 302, col 26 to line 302, col 40 of module chase_lev_memory_ordering: 18
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<AccountingPreserved line 304, col 1 to line 304, col 19 of module chase_lev_memory_ordering>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 305, col 3 to line 308, col 67 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 305, col 6 to line 305, col 46 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 305, col 6 to line 305, col 41 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 305, col 6 to line 305, col 14 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 305, col 27 to line 305, col 41 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 57, col 16 to line 57, col 43 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 57, col 17 to line 57, col 22 of module chase_lev_memory_ordering: 378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 57, col 32 to line 57, col 42 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 305, col 34 to line 305, col 40 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 305, col 45 to line 305, col 46 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 306, col 6 to line 306, col 38 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 307, col 6 to line 307, col 44 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 307, col 6 to line 307, col 39 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 307, col 6 to line 307, col 20 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 57, col 16 to line 57, col 43 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 57, col 17 to line 57, col 22 of module chase_lev_memory_ordering: 378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 57, col 32 to line 57, col 42 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 307, col 13 to line 307, col 19 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 307, col 33 to line 307, col 39 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 307, col 43 to line 307, col 44 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 308, col 6 to line 308, col 67 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 308, col 6 to line 308, col 59 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 308, col 6 to line 308, col 47 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 308, col 6 to line 308, col 35 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 308, col 6 to line 308, col 14 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||line 308, col 21 to line 308, col 35 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2775:0 @!@!@
+  ||||||line 57, col 16 to line 57, col 43 of module chase_lev_memory_ordering: 1191:507
+@!@!@ENDMSG 2775 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||||line 57, col 17 to line 57, col 22 of module chase_lev_memory_ordering: 378
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||||||line 57, col 32 to line 57, col 42 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||||line 308, col 28 to line 308, col 34 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||||line 308, col 42 to line 308, col 47 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |||line 308, col 54 to line 308, col 59 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  ||line 308, col 63 to line 308, col 67 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2774:0 @!@!@
+<LastItemRaceLeavesSingleWinner line 310, col 1 to line 310, col 30 of module chase_lev_memory_ordering>
+@!@!@ENDMSG 2774 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  line 311, col 3 to line 314, col 36 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 311, col 3 to line 311, col 92 of module chase_lev_memory_ordering: 1191
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2221:0 @!@!@
+  |line 312, col 5 to line 314, col 36 of module chase_lev_memory_ordering: 480
+@!@!@ENDMSG 2221 @!@!@
+@!@!@STARTMSG 2202:0 @!@!@
+End of statistics.
+@!@!@ENDMSG 2202 @!@!@
+@!@!@STARTMSG 2200:0 @!@!@
+Progress(13) at 2026-03-14 19:41:04: 2,938 states generated (216,560 s/min), 1,191 distinct states found (87,788 ds/min), 0 states left on queue.
+@!@!@ENDMSG 2200 @!@!@
+@!@!@STARTMSG 2199:0 @!@!@
+2938 states generated, 1191 distinct states found, 0 states left on queue.
+@!@!@ENDMSG 2199 @!@!@
+@!@!@STARTMSG 2194:0 @!@!@
+The depth of the complete state graph search is 13.
+@!@!@ENDMSG 2194 @!@!@
+@!@!@STARTMSG 2268:0 @!@!@
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 4).
+@!@!@ENDMSG 2268 @!@!@
+@!@!@STARTMSG 2186:0 @!@!@
+Finished in 816ms at (2026-03-14 19:41:04)
+@!@!@ENDMSG 2186 @!@!@
