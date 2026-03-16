@@ -1,0 +1,1 @@
+../../shared/refinement_vocabulary.tla

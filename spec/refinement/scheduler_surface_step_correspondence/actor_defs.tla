@@ -1,0 +1,1 @@
+../../shared/actor_defs.tla
