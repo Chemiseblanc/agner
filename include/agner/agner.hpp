@@ -44,6 +44,7 @@
 #include "agner/actor_control.hpp"
 #include "agner/errors.hpp"
 #include "agner/genserver.hpp"
+#include "agner/mt_scheduler.hpp"
 #include "agner/scheduler.hpp"
 #include "agner/scheduler_base.hpp"
 #include "agner/scheduler_concept.hpp"
