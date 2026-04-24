@@ -11,19 +11,24 @@ mkdir -p "${coverage_dir}"
 
 cmake --preset "${preset}"
 cmake --build --preset "${preset}" --target agner_tests
-ctest --preset "${preset}"
+LLVM_PROFILE_FILE="${coverage_dir}/agner-%p.profraw" ctest --preset "${preset}"
 
-gcovr \
-  --root "${repo_root}" \
-  --gcov-executable "llvm-cov gcov" \
-  --delete \
-  --decisions \
-  --merge-lines \
-  --exclude-function-lines \
-  --exclude-throw-branches \
-  --exclude-unreachable-branches \
-  --exclude ".*artifacts/.*" \
-  --exclude ".*test/.*" \
-  --print-summary \
-  --txt "${coverage_dir}/coverage.txt" \
-  --html-details "${coverage_dir}/index.html"
+llvm-profdata merge -sparse "${coverage_dir}"/*.profraw \
+  -o "${coverage_dir}/coverage.profdata"
+
+llvm-cov report "${build_dir}/agner_tests" \
+  -instr-profile="${coverage_dir}/coverage.profdata" \
+  -ignore-filename-regex='(.*/artifacts/.*|.*/test/.*)' \
+  -show-branch-summary \
+  -show-mcdc-summary \
+  > "${coverage_dir}/coverage.txt"
+
+llvm-cov show "${build_dir}/agner_tests" \
+  -instr-profile="${coverage_dir}/coverage.profdata" \
+  -ignore-filename-regex='(.*/artifacts/.*|.*/test/.*)' \
+  -show-branches=count \
+  -show-mcdc \
+  -format=html \
+  -output-dir="${coverage_dir}/html"
+
+cat "${coverage_dir}/coverage.txt"
