@@ -1,10 +1,13 @@
 #include "agner/supervisor.hpp"
+#include "agner/detail/actor_detail.hpp"
+#include "agner/detail/supervisor_detail.hpp"
 
 #include <gtest/gtest.h>
 
 #include <map>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "test_support.hpp"
@@ -186,6 +189,15 @@ class DownSignalSender
  private:
   agner::ActorRef target_{};
   agner::ActorRef from_{};
+};
+
+struct IndexRecorder {
+  std::size_t* value;
+
+  template <std::size_t Index>
+  void operator()() {
+    *value = Index;
+  }
 };
 
 class ReuseSupervisor
@@ -848,6 +860,38 @@ class IntensitySupervisor
 
 }  // namespace
 
+// Summary: Actor detail visitor matching shall report no match.
+// Description: This test calls the visitor helper directly with a visitor that
+// cannot handle the variant's current message, covering the false fold path.
+// EARS: When no visitor accepts a message, the actor detail helper shall report
+// no match.
+TEST(Supervisor, DetailTryMatchVisitorsReportsNoMatch) {
+  std::variant<Ping, Pong> message{Ping{1}};
+  int storage = 0;
+  auto pong_visitor = [](Pong& pong) { return pong.value; };
+  auto other_pong_visitor = [](Pong& pong) { return pong.value + 1; };
+
+  EXPECT_FALSE(agner::detail::try_match_visitors(message, storage,
+                                                 pong_visitor,
+                                                 other_pong_visitor));
+  EXPECT_EQ(storage, 0);
+}
+
+// Summary: Supervisor detail index visitor shall report invalid indexes.
+// Description: This test calls visit_at_index directly with valid and invalid
+// indexes to cover both fold outcomes.
+// EARS: When an index visitor receives an out-of-range index, the supervisor
+// detail helper shall return false without invoking the visitor.
+TEST(Supervisor, DetailVisitAtIndexReportsInvalidIndex) {
+  std::size_t value = 99;
+
+  EXPECT_TRUE(agner::detail::visit_at_index<3>(1, IndexRecorder{&value}));
+  EXPECT_EQ(value, 1u);
+
+  EXPECT_FALSE(agner::detail::visit_at_index<3>(3, IndexRecorder{&value}));
+  EXPECT_EQ(value, 1u);
+}
+
 // Summary: When a one-for-one child exits, it shall restart the same child.
 // Description: This test spawns a supervisor with one permanent child, then
 // stops the child with an error reason. The child is expected to restart once,
@@ -1217,6 +1261,35 @@ TEST(Supervisor, StopQueuesChildStopsWithoutRestartChurn) {
   ASSERT_TRUE(capture.down_kind.has_value());
   EXPECT_EQ(*capture.down_kind, agner::ExitReason::Kind::stopped);
   EXPECT_EQ(log.starts[1], 1);
+}
+
+// Summary: A stopping supervisor shall ignore non-self exit signals.
+// Description: This test queues a non-self ExitSignal before delivering the
+// supervisor's own stop signal. The supervisor is stopping when it processes
+// both messages, and only the self signal should exit the supervise loop.
+// EARS: When a stopping supervisor receives a non-self exit signal, the
+// supervisor component shall ignore it and wait for its own stop signal.
+TEST(Supervisor, StoppingSupervisorIgnoresNonSelfExitSignal) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+  SignalCapture capture;
+  auto supervisor = scheduler.spawn<OneForOneSupervisor>(&log);
+
+  scheduler.run_until_idle();
+  scheduler.spawn<DeterministicObserver>(supervisor, &capture);
+  scheduler.run_until_idle();
+
+  auto outsider = scheduler.spawn<LoggedChild>(&log, 99);
+  scheduler.run_until_idle();
+
+  scheduler.defer_stop_delivery();
+  scheduler.stop(supervisor, {agner::ExitReason::Kind::stopped});
+  scheduler.send(supervisor, agner::ExitSignal{outsider, agner::ExitReason{}});
+  scheduler.flush_stop(supervisor);
+  scheduler.run_until_idle();
+
+  ASSERT_TRUE(capture.down_kind.has_value());
+  EXPECT_EQ(*capture.down_kind, agner::ExitReason::Kind::stopped);
 }
 
 // Summary: When a non-simple supervisor is asked to start an already running

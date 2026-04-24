@@ -336,6 +336,50 @@ TEST(GenServer, ServeIgnoresReplyMessages) {
   EXPECT_EQ(result, 42);
 }
 
+// Summary: GenServer serve() shall ignore DownSignal messages.
+// Description: This test sends a DownSignal directly to a server running
+// serve(), then performs a normal call to verify the server continued.
+// EARS: When serve receives down signal messages, the gen server component
+// shall ignore them and continue processing requests.
+TEST(GenServer, ServeIgnoresDownSignalMessages) {
+  agner::DeterministicScheduler scheduler;
+  int result = 0;
+
+  auto server =
+      scheduler.spawn<CounterServer<agner::DeterministicScheduler>>(42);
+
+  class DownSignalTestClient
+      : public agner::GenServer<agner::DeterministicScheduler,
+                                DownSignalTestClient,
+                                agner::Handlers<int(GetCount)>> {
+   public:
+    using Base =
+        agner::GenServer<agner::DeterministicScheduler, DownSignalTestClient,
+                         agner::Handlers<int(GetCount)>>;
+
+    DownSignalTestClient(agner::DeterministicScheduler& scheduler,
+                         agner::ActorRef server, int* out)
+        : Base(scheduler), server_(server), out_(out) {}
+
+    agner::task<void> run() {
+      this->send(server_, agner::DownSignal{this->self(), agner::ExitReason{}});
+      auto count = co_await this->call(
+          server_, GetCount{}, agner::DeterministicScheduler::duration{100});
+      *out_ = count;
+      co_return;
+    }
+
+   private:
+    agner::ActorRef server_;
+    int* out_;
+  };
+
+  scheduler.spawn<DownSignalTestClient>(server, &result);
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(result, 42);
+}
+
 // Summary: GenServer call shall timeout when receiving wrong request_id.
 // Description: This test sends a Reply with an incorrect request_id to a
 // client, verifying that mismatched replies cause the call to timeout.

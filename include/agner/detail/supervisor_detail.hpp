@@ -65,19 +65,25 @@ template <typename ActorType, typename... Specs>
 constexpr std::size_t spec_index_v =
     spec_index_impl<ActorType, 0, Specs...>::value;
 
+template <typename Selector, typename... Specs>
+struct resolved_selector_index {
+  static constexpr std::size_t count = spec_count<Selector, Specs...>::value;
+  static_assert(count == 1,
+                "Selector must match exactly one child specification.");
+  static constexpr std::size_t value = spec_index_v<Selector, Specs...>;
+};
+
+template <typename Selector, typename... Specs>
+  requires is_child_index_v<Selector>
+struct resolved_selector_index<Selector, Specs...> {
+  static constexpr std::size_t value = Selector::value;
+};
+
 // Resolves a Selector (either ChildIndex<N> or ActorType) to a spec index.
 // For type-based selectors, asserts that exactly one matching spec exists.
 template <typename Selector, typename... Specs>
-constexpr std::size_t resolve_selector_index() {
-  if constexpr (is_child_index_v<Selector>) {
-    return Selector::value;
-  } else {
-    constexpr std::size_t count = spec_count<Selector, Specs...>::value;
-    static_assert(count == 1,
-                  "Selector must match exactly one child specification.");
-    return spec_index_v<Selector, Specs...>;
-  }
-}
+inline constexpr std::size_t resolve_selector_index_v =
+    resolved_selector_index<Selector, Specs...>::value;
 
 // Returns a copy if T is copy-constructible, otherwise moves.
 // Note: Move-only args mean a child can only be started once (e.g., for

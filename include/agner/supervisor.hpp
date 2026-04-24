@@ -148,7 +148,7 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   template <typename Selector, typename... Args>
   task<ActorRef> start_child(Args&&... args) {
     constexpr std::size_t index =
-        detail::resolve_selector_index<Selector, ChildSpecs...>();
+        detail::resolve_selector_index_v<Selector, ChildSpecs...>;
     if constexpr (sizeof...(Args) == 0) {
       co_return co_await start_child_by_index<index>();
     } else {
@@ -162,7 +162,7 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   template <typename Selector>
   task<void> stop_child() {
     constexpr std::size_t index =
-        detail::resolve_selector_index<Selector, ChildSpecs...>();
+        detail::resolve_selector_index_v<Selector, ChildSpecs...>;
     stop_children_by_index<index>();
     co_return;
   }
@@ -172,7 +172,7 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   template <typename Selector>
   task<void> restart_child() {
     constexpr std::size_t index =
-        detail::resolve_selector_index<Selector, ChildSpecs...>();
+        detail::resolve_selector_index_v<Selector, ChildSpecs...>;
     restart_children_by_index<index>();
     co_return;
   }
@@ -182,7 +182,7 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
   template <typename Selector>
   task<void> delete_child() {
     constexpr std::size_t index =
-        detail::resolve_selector_index<Selector, ChildSpecs...>();
+        detail::resolve_selector_index_v<Selector, ChildSpecs...>;
     delete_children_by_index<index>();
     co_return;
   }
@@ -238,9 +238,11 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
             handle_signal(signal.from, signal.reason);
           },
           [&](ExitSignal& signal) {
-            if (stopping_ && signal.from == this->self()) {
-              stop_requested = true;
-              return;
+            if (stopping_) {
+              if (signal.from == this->self()) {
+                stop_requested = true;
+                return;
+              }
             }
             handle_signal(signal.from, signal.reason);
           });
@@ -505,8 +507,6 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
     // Add failed child to plan first
     group.plan.push_back(RestartPlanItem{failed_ref, failed_entry, reason});
 
-    assert(group.strategy == Strategy::one_for_all ||
-           group.strategy == Strategy::rest_for_one);
     std::for_each(children_.begin(), children_.end(), [&](const auto& child) {
       const auto& [ref, entry] = child;
       group.plan.push_back(
