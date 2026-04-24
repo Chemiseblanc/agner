@@ -54,6 +54,17 @@ class SchedulerBase {
     send_fn(std::any(std::forward<decltype(message)>(message)));
   }
 
+  /// @brief Send a message to a typed actor handle.
+  template <typename ActorType, typename Message>
+    requires detail::MessageForActor<ActorType, Message>
+  void send(ActorHandle<ActorType> target, Message&& message) {
+    send(target.ref(), std::forward<Message>(message));
+  }
+
+  template <typename ActorType, typename Message>
+    requires(!detail::MessageForActor<ActorType, Message>)
+  void send(ActorHandle<ActorType>, Message&&) = delete;
+
   /// @brief Establish a bidirectional link between two actors.
   void link(ActorRef left, ActorRef right) {
     std::lock_guard<base_mutex_type> lock(base_mutex_);
@@ -76,7 +87,7 @@ class SchedulerBase {
   /// @brief Spawn a new actor.
   /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
-  ActorRef spawn(Args&&... args) {
+  ActorHandle<ActorType> spawn(Args&&... args) {
     return spawn_impl<ActorType>(ActorRef{}, ActorRef{},
                                  std::forward<Args>(args)...);
   }
@@ -85,7 +96,7 @@ class SchedulerBase {
   /// @param linker The actor to link with.
   /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
-  ActorRef spawn_link(ActorRef linker, Args&&... args) {
+  ActorHandle<ActorType> spawn_link(ActorRef linker, Args&&... args) {
     return spawn_impl<ActorType>(linker, ActorRef{},
                                  std::forward<Args>(args)...);
   }
@@ -94,7 +105,7 @@ class SchedulerBase {
   /// @param monitor_ref The actor that will monitor the spawned actor.
   /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
-  ActorRef spawn_monitor(ActorRef monitor_ref, Args&&... args) {
+  ActorHandle<ActorType> spawn_monitor(ActorRef monitor_ref, Args&&... args) {
     return spawn_impl<ActorType>(ActorRef{}, monitor_ref,
                                  std::forward<Args>(args)...);
   }
@@ -128,7 +139,8 @@ class SchedulerBase {
   }
 
   template <typename ActorType, typename... Args>
-  ActorRef spawn_impl(ActorRef linker, ActorRef monitor_ref, Args&&... args) {
+  ActorHandle<ActorType> spawn_impl(ActorRef linker, ActorRef monitor_ref,
+                                    Args&&... args) {
     auto actor = std::make_shared<ActorType>(self(), std::forward<Args>(args)...);
     auto actor_ref = next_actor_ref();
     actor->set_actor_ref(actor_ref);
@@ -151,7 +163,7 @@ class SchedulerBase {
 
     active_actor_count_.fetch_add(1, std::memory_order_relaxed);
     run_actor(actor, actor_ref).detach(self());
-    return actor_ref;
+    return ActorHandle<ActorType>{actor_ref};
   }
 
   bool actor_exists(ActorRef actor_ref) const {

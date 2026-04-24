@@ -34,7 +34,8 @@
  * int main() {
  *   Scheduler sched;
  *   sched.spawn<PingActor>();
- *   return sched.run();
+ *   sched.run();
+ *   return 0;
  * }
  * @endcode
  */

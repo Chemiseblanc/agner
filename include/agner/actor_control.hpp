@@ -2,6 +2,8 @@
 
 #include <compare>
 #include <cstdint>
+#include <type_traits>
+#include <variant>
 
 namespace agner {
 
@@ -20,6 +22,43 @@ struct ActorRef {
   friend std::strong_ordering operator<=>(const ActorRef&,
                                           const ActorRef&) = default;
 };
+
+/// @brief Typed reference to an actor instance.
+template <typename ActorType>
+class ActorHandle {
+ public:
+  constexpr ActorHandle() noexcept = default;
+  constexpr explicit ActorHandle(ActorRef actor_ref) noexcept
+      : actor_ref_(actor_ref) {}
+
+  constexpr ActorRef ref() const noexcept { return actor_ref_; }
+  constexpr bool valid() const noexcept { return actor_ref_.valid(); }
+
+  constexpr operator ActorRef() const noexcept { return actor_ref_; }
+
+  friend bool operator==(const ActorHandle&, const ActorHandle&) = default;
+  friend std::strong_ordering operator<=>(const ActorHandle&,
+                                          const ActorHandle&) = default;
+
+ private:
+  ActorRef actor_ref_{};
+};
+
+namespace detail {
+
+template <typename Message, typename Variant>
+struct variant_contains;
+
+template <typename Message, typename... Messages>
+struct variant_contains<Message, std::variant<Messages...>>
+    : std::bool_constant<(std::is_same_v<std::decay_t<Message>, Messages> ||
+                          ...)> {};
+
+template <typename ActorType, typename Message>
+concept MessageForActor =
+    variant_contains<Message, typename ActorType::message_variant>::value;
+
+}  // namespace detail
 
 /// @brief Describes why an actor exited.
 struct ExitReason {

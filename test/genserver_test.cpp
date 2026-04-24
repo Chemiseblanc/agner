@@ -180,6 +180,28 @@ TEST(GenServer, MultipleCalls) {
   EXPECT_EQ(result, 15);
 }
 
+// Summary: A successful GenServer call shall cancel its timeout path.
+// Description: This test completes a call before its timeout, then advances
+// deterministic time past the original deadline. The completed result must
+// remain unchanged and no timeout path should resume the caller.
+// EARS: When call reply arrives before timeout, the gen server component shall
+// cancel the pending timeout.
+TEST(GenServer, CallTimeoutCancelledAfterReply) {
+  agner::DeterministicScheduler scheduler;
+  int result = 0;
+
+  auto server =
+      scheduler.spawn<CounterServer<agner::DeterministicScheduler>>(42);
+  scheduler.spawn<CounterClient<agner::DeterministicScheduler>>(server,
+                                                                &result);
+
+  scheduler.run_until_idle();
+  EXPECT_EQ(result, 42);
+
+  scheduler.run_for(200ms);
+  EXPECT_EQ(result, 42);
+}
+
 // Summary: When a GenServer receives an ExitSignal, it shall stop serving.
 // Description: This test sends an ExitSignal to a running CounterServer, then
 // verifies the server has exited by checking that a monitor observer receives a

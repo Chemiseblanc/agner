@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <string>
+#include <type_traits>
 
 #include "test_support.hpp"
 
@@ -11,6 +12,18 @@ using namespace agner::test_support;
 using agner::ActorRef;
 
 }  // namespace
+
+static_assert(std::is_same_v<
+              decltype(std::declval<agner::Scheduler&>().spawn<Collector>(
+                  static_cast<int*>(nullptr))),
+              agner::ActorHandle<Collector>>);
+
+static_assert(requires(agner::Scheduler& scheduler,
+                       agner::ActorHandle<Collector> actor) {
+  scheduler.send(actor, Ping{42});
+});
+
+static_assert(!agner::detail::MessageForActor<Collector, std::string>);
 
 // Summary: When a linked actor exits, it shall deliver an exit signal to the
 // linker. Description: This test links an observer to a worker and stops the
@@ -184,7 +197,7 @@ TEST(ActorControl, UnmatchedMessageIsDropped) {
   auto actor = scheduler.spawn<Collector>(&value);
 
   // Send a message type that doesn't match any handler
-  scheduler.send(actor, std::string("wrong type"));
+  scheduler.send(actor.ref(), std::string("wrong type"));
 
   // Send a valid message to complete the actor
   scheduler.send(actor, Ping{42});

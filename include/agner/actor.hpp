@@ -8,11 +8,13 @@
  * Each actor has a mailbox and processes messages using coroutine-based receive.
  */
 
+#include <algorithm>
+#include <atomic>
 #include <cassert>
 #include <chrono>
-#include <algorithm>
 #include <deque>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <optional>
 #include <tuple>
@@ -89,17 +91,22 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
     scheduler_.send(target, std::forward<decltype(message)>(message));
   }
 
+  template <typename ActorType, typename Message>
+  void send(ActorHandle<ActorType> target, Message&& message) {
+    scheduler_.send(target, std::forward<Message>(message));
+  }
+
   /// @brief Spawn a new actor.
   /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
-  ActorRef spawn(Args&&... args) {
+  ActorHandle<ActorType> spawn(Args&&... args) {
     return scheduler_.template spawn<ActorType>(std::forward<Args>(args)...);
   }
 
   /// @brief Spawn a new actor and establish a bidirectional link.
   /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
-  ActorRef spawn_link(Args&&... args) {
+  ActorHandle<ActorType> spawn_link(Args&&... args) {
     return scheduler_.template spawn_link<ActorType>(
         self(), std::forward<Args>(args)...);
   }
@@ -107,7 +114,7 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
   /// @brief Spawn a new actor and monitor it for exit.
   /// @return Reference to the spawned actor.
   template <typename ActorType, typename... Args>
-  ActorRef spawn_monitor(Args&&... args) {
+  ActorHandle<ActorType> spawn_monitor(Args&&... args) {
     return scheduler_.template spawn_monitor<ActorType>(
         self(), std::forward<Args>(args)...);
   }
@@ -226,18 +233,19 @@ class Actor<SchedulerType, Derived, Messages<MessageTypes...>>
       if constexpr (!std::is_same_v<TimeoutVisitor, std::nullptr_t>) {
         auto active_flag = std::make_shared<std::atomic<bool>>(true);
         active_ = active_flag;
-        actor_.scheduler_.schedule_after(timeout_, [this, handle, active_flag]() mutable {
-          if (!active_flag->load(std::memory_order_acquire)) {
-            return;
-          }
-          active_flag->store(false, std::memory_order_release);
-          timeout();
-          {
-            std::lock_guard<actor_mutex_type> lock(actor_.actor_mutex_);
-            actor_.pending_.reset();
-          }
-          actor_.scheduler_.schedule(handle);
-        });
+        actor_.scheduler_.schedule_after(
+            timeout_, [this, handle, active_flag]() mutable {
+              if (!active_flag->load(std::memory_order_acquire)) {
+                return;
+              }
+              active_flag->store(false, std::memory_order_release);
+              timeout();
+              {
+                std::lock_guard<actor_mutex_type> lock(actor_.actor_mutex_);
+                actor_.pending_.reset();
+              }
+              actor_.scheduler_.schedule(handle);
+            });
       }
     }
 

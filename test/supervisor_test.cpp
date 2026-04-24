@@ -379,6 +379,78 @@ class RestForOneSupervisor
   ChildLog* log_;
 };
 
+class RuntimeArgsOneForAllSupervisor
+    : public agner::Supervisor<agner::DeterministicScheduler,
+                               RuntimeArgsOneForAllSupervisor,
+                               agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                               agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+ public:
+  using Base = agner::Supervisor<agner::DeterministicScheduler,
+                                 RuntimeArgsOneForAllSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+
+  RuntimeArgsOneForAllSupervisor(agner::DeterministicScheduler& scheduler,
+                                 ChildLog* log)
+      : Base(scheduler), log_(log) {}
+
+  static Specification specification() {
+    return {
+        .strategy = agner::Strategy::one_for_all,
+        .intensity = {3, 10ms},
+        .children = std::make_tuple(
+            agner::child<LoggedChild, ChildLog*, int>(
+                {"child_a"}, agner::Restart::permanent, 0ms, null_log(), 1),
+            agner::child<LoggedChild, ChildLog*, int>(
+                {"child_b"}, agner::Restart::permanent, 0ms, null_log(), 2))};
+  }
+
+  task<void> run() {
+    this->template set_child_args<0>(std::make_tuple(log_, 10));
+    this->template set_child_args<1>(std::make_tuple(log_, 20));
+    co_await Base::run();
+  }
+
+ private:
+  ChildLog* log_;
+};
+
+class RuntimeArgsRestForOneSupervisor
+    : public agner::Supervisor<agner::DeterministicScheduler,
+                               RuntimeArgsRestForOneSupervisor,
+                               agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                               agner::ChildSpec<LoggedChild, ChildLog*, int>> {
+ public:
+  using Base = agner::Supervisor<agner::DeterministicScheduler,
+                                 RuntimeArgsRestForOneSupervisor,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>,
+                                 agner::ChildSpec<LoggedChild, ChildLog*, int>>;
+
+  RuntimeArgsRestForOneSupervisor(agner::DeterministicScheduler& scheduler,
+                                  ChildLog* log)
+      : Base(scheduler), log_(log) {}
+
+  static Specification specification() {
+    return {
+        .strategy = agner::Strategy::rest_for_one,
+        .intensity = {3, 10ms},
+        .children = std::make_tuple(
+            agner::child<LoggedChild, ChildLog*, int>(
+                {"child_a"}, agner::Restart::permanent, 0ms, null_log(), 1),
+            agner::child<LoggedChild, ChildLog*, int>(
+                {"child_b"}, agner::Restart::permanent, 0ms, null_log(), 2))};
+  }
+
+  task<void> run() {
+    this->template set_child_args<0>(std::make_tuple(log_, 10));
+    this->template set_child_args<1>(std::make_tuple(log_, 20));
+    co_await Base::run();
+  }
+
+ private:
+  ChildLog* log_;
+};
+
 class SimpleSupervisor
     : public agner::Supervisor<agner::DeterministicScheduler, SimpleSupervisor,
                                agner::ChildSpec<LoggedChild, ChildLog*, int>> {
@@ -863,6 +935,30 @@ TEST(Supervisor, OneForAllRestartsAllChildren) {
   EXPECT_EQ(log.starts[2], 2);
 }
 
+// Summary: When one-for-all restarts children, runtime constructor args shall
+// be preserved. Description: This test gives the children runtime ids that
+// differ from their specification defaults, stops one child, and verifies the
+// restarted children use the runtime ids.
+// EARS: When one for all restarts children with runtime args, the supervisor
+// component shall preserve those args across restart.
+TEST(Supervisor, OneForAllRestartPreservesRuntimeArgs) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+  scheduler.spawn<RuntimeArgsOneForAllSupervisor>(&log);
+
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[10], 1);
+  ASSERT_EQ(log.starts[20], 1);
+
+  scheduler.stop(log.refs[10], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[10], 2);
+  EXPECT_EQ(log.starts[20], 2);
+  EXPECT_EQ(log.starts[1], 0);
+  EXPECT_EQ(log.starts[2], 0);
+}
+
 // Summary: When rest-for-one fails the last child, only that child restarts.
 // Description: This test stops the second child and verifies only that child
 // restarts. It then stops the first child and verifies both restart because the
@@ -892,6 +988,30 @@ TEST(Supervisor, RestForOneRestartsLaterChildren) {
 
   EXPECT_EQ(log.starts[1], 2);
   EXPECT_EQ(log.starts[2], 3);
+}
+
+// Summary: When rest-for-one restarts a group, runtime constructor args shall
+// be preserved. Description: This test gives the children runtime ids that
+// differ from their specification defaults, stops the first child, and verifies
+// restarted children use the runtime ids.
+// EARS: When rest for one restarts children with runtime args, the supervisor
+// component shall preserve those args across restart.
+TEST(Supervisor, RestForOneRestartPreservesRuntimeArgs) {
+  agner::DeterministicScheduler scheduler;
+  ChildLog log;
+  scheduler.spawn<RuntimeArgsRestForOneSupervisor>(&log);
+
+  scheduler.run_until_idle();
+  ASSERT_EQ(log.starts[10], 1);
+  ASSERT_EQ(log.starts[20], 1);
+
+  scheduler.stop(log.refs[10], {agner::ExitReason::Kind::error});
+  scheduler.run_until_idle();
+
+  EXPECT_EQ(log.starts[10], 2);
+  EXPECT_EQ(log.starts[20], 2);
+  EXPECT_EQ(log.starts[1], 0);
+  EXPECT_EQ(log.starts[2], 0);
 }
 
 // Summary: When simple-one-for-one fails a child, only that instance restarts.

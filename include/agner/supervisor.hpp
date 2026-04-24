@@ -262,8 +262,7 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
 
   struct RestartPlanItem {
     ActorRef ref;
-    std::size_t spec_index = 0;
-    std::size_t start_order = 0;
+    ChildEntry entry;
     ExitReason reason;
   };
 
@@ -504,16 +503,14 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
     group.strategy = specification_.strategy;
 
     // Add failed child to plan first
-    group.plan.push_back(RestartPlanItem{failed_ref, failed_entry.spec_index,
-                                         failed_entry.start_order, reason});
+    group.plan.push_back(RestartPlanItem{failed_ref, failed_entry, reason});
 
     assert(group.strategy == Strategy::one_for_all ||
            group.strategy == Strategy::rest_for_one);
     std::for_each(children_.begin(), children_.end(), [&](const auto& child) {
       const auto& [ref, entry] = child;
       group.plan.push_back(
-          RestartPlanItem{ref, entry.spec_index, entry.start_order,
-                          ExitReason{ExitReason::Kind::stopped}});
+          RestartPlanItem{ref, entry, ExitReason{ExitReason::Kind::stopped}});
     });
     auto plan_it = group.plan.begin();
     ++plan_it;  // Keep failed child entry at index 0.
@@ -521,7 +518,8 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
         std::remove_if(plan_it, group.plan.end(),
                        [&](const auto& plan_item) {
                          return group.strategy == Strategy::rest_for_one &&
-                                plan_item.start_order <= failed_entry.start_order;
+                                plan_item.entry.start_order <=
+                                    failed_entry.start_order;
                        }),
         group.plan.end());
 
@@ -551,10 +549,9 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
     restart_group_.reset();
 
     std::for_each(group.plan.begin(), group.plan.end(), [&](const auto& plan_item) {
-      if (should_restart(restart_at_spec_index(plan_item.spec_index),
+      if (should_restart(restart_at_spec_index(plan_item.entry.spec_index),
                          plan_item.reason)) {
-        // Respawn using spec's default args
-        respawn_at_spec_index(plan_item.spec_index);
+        respawn_with_entry(plan_item.entry);
       }
     });
   }
@@ -568,15 +565,6 @@ class Supervisor : public Actor<SchedulerType, Derived, Messages<>> {
           auto& args = std::any_cast<const ArgsTuple&>(entry.args);
           auto args_copy = args;
           start_child_with_args<Index>(std::move(args_copy));
-        });
-  }
-
-  // Respawn using the spec's default args
-  void respawn_at_spec_index(std::size_t spec_index) {
-    detail::visit_at_index<sizeof...(ChildSpecs)>(
-        spec_index, [&]<std::size_t Index>() {
-          auto& state = std::get<Index>(states_);
-          start_child_with_args<Index>(state.spec.args);
         });
   }
 

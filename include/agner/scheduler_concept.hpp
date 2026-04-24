@@ -20,16 +20,16 @@ concept SchedulerLike = requires(
   scheduler.run();
   {
     scheduler.template spawn<detail::SchedulerProbeActor<SchedulerType>>()
-  } -> std::same_as<ActorRef>;
+  } -> std::same_as<ActorHandle<detail::SchedulerProbeActor<SchedulerType>>>;
   {
     scheduler.template spawn_link<detail::SchedulerProbeActor<SchedulerType>>(
         actor_ref)
-  } -> std::same_as<ActorRef>;
+  } -> std::same_as<ActorHandle<detail::SchedulerProbeActor<SchedulerType>>>;
   {
     scheduler
         .template spawn_monitor<detail::SchedulerProbeActor<SchedulerType>>(
             actor_ref)
-  } -> std::same_as<ActorRef>;
+  } -> std::same_as<ActorHandle<detail::SchedulerProbeActor<SchedulerType>>>;
   scheduler.send(actor_ref, detail::SchedulerProbeMessage{});
 };
 
