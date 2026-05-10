@@ -43,6 +43,9 @@
 #include "agner/actor.hpp"
 #include "agner/actor_concepts.hpp"
 #include "agner/actor_control.hpp"
+#ifdef AGNER_HAS_BOOST_ASIO
+#include "agner/asio_scheduler.hpp"
+#endif
 #include "agner/errors.hpp"
 #include "agner/genserver.hpp"
 #include "agner/mt_scheduler.hpp"

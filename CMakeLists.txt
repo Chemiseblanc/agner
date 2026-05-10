@@ -4,6 +4,8 @@ project(agner LANGUAGES CXX)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+option(AGNER_ENABLE_BOOST_ASIO "Enable Boost.Asio support" OFF)
+
 if(NOT DEFINED AGNER_ENABLE_COVERAGE)
   if(CMAKE_CONFIGURATION_TYPES)
     set(AGNER_ENABLE_COVERAGE ON)
@@ -26,6 +28,27 @@ target_compile_features(agner INTERFACE cxx_std_20)
 include(CTest)
 
 include(FetchContent)
+if(AGNER_ENABLE_BOOST_ASIO)
+  find_package(Boost CONFIG COMPONENTS asio thread QUIET)
+  if(NOT Boost_FOUND)
+    set(BOOST_INCLUDE_LIBRARIES asio thread)
+    set(BOOST_ENABLE_CMAKE ON)
+    FetchContent_Declare(
+      boost
+      URL https://github.com/boostorg/boost/releases/download/boost-1.86.0/boost-1.86.0-cmake.tar.xz
+      DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    )
+    FetchContent_MakeAvailable(boost)
+  endif()
+
+  target_compile_definitions(agner INTERFACE
+    AGNER_HAS_BOOST_ASIO
+    BOOST_THREAD_PROVIDES_FUTURE
+    BOOST_THREAD_PROVIDES_FUTURE_CONTINUATION
+  )
+  target_link_libraries(agner INTERFACE Boost::asio Boost::thread)
+endif()
+
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
@@ -41,7 +64,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(benchmark)
 
-add_executable(agner_tests
+set(AGNER_TEST_SOURCES
   test/actor_test.cpp
   test/actor_control_test.cpp
   test/chase_lev_deque_test.cpp
@@ -50,6 +73,14 @@ add_executable(agner_tests
   test/scheduler_test.cpp
   test/supervisor_test.cpp
   test/task_test.cpp
+)
+
+if(AGNER_ENABLE_BOOST_ASIO)
+  list(APPEND AGNER_TEST_SOURCES test/asio_scheduler_test.cpp)
+endif()
+
+add_executable(agner_tests
+  ${AGNER_TEST_SOURCES}
 )
 
 add_executable(agner_benchmarks

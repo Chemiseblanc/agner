@@ -4,6 +4,18 @@
 - Erlang process based actor framework
 - OTP-style GenServer and Supervisor primitives
 - FoundationDB style deterministic testing
+- Optional Boost.Asio-backed scheduler and await bridges
+
+# Boost.Asio support
+- Enable with CMake: `cmake --preset default -DAGNER_ENABLE_BOOST_ASIO=ON`.
+- When enabled, `<agner/agner.hpp>` exposes `agner::AsioScheduler`; otherwise the
+  aggregate header does not include the optional Boost-dependent header.
+- `AsioScheduler` runs actors on a `boost::asio::io_context` and provides
+  explicit await bridges via `scheduler.await(...)` or
+  `asio_await(scheduler, ...)`.
+- Supported await inputs are Boost.Thread `boost::future` and
+  `boost::shared_future`, `std::future` values such as those returned by
+  Boost.Asio `use_future`, and `boost::asio::awaitable`.
 
 # Formal model
 - `spec/core_actor_system.tla` models the actor core with an abstract
